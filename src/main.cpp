@@ -3,15 +3,10 @@
 #include <iostream>
 #include <boost/tokenizer.hpp>
 #include <queue>
+#include <string.h>
 
 using namespace std;
 using namespace boost;
-
-//will parse the commands passed in 
-//and will output a vector of char**
-//vector<char**> parseline(char** line) {
-	//NOT SURE IF I WILL KEEP THIS
-//}
 
 void runexec(char** argv);	//will use system calls to run the 
 							//commands provided
@@ -20,7 +15,10 @@ string findconnect(string str);		//outputs a string of every connector
 
 queue<string> parseline(string str);		//separate commands by connectors from the original string
 
-//char* parsecommand(string str);	//parse the spaces from each command and output as char*
+//char** parsecommand(string str);	//parse the spaces from each command and output as char*
+
+vector<string> parsecommand(string str);	//parse the spaces from each command and output as char*
+
 
 int main(int argc, char** argv) {
 	string input;
@@ -32,6 +30,10 @@ int main(int argc, char** argv) {
 		queue<string> cmds = parseline(input);
 		while(!cmds.empty()) {
 			cout << "command: " << cmds.front() << endl;
+			vector<string> param = parsecommand(cmds.front());
+			for(int i=0; i<param.size(); ++i) {
+				cout << "param: " << param[i] << endl;
+			}
 			cmds.pop();
 		}
 			
@@ -152,9 +154,27 @@ queue<string> parseline(string str) {
 }
 
 //char** parsecommand(string str) {
-//	char** out;	
-//	tokenizer<> token(str);
-//	for(tokenizer<>::iterator i=token.begin(); i!=token.end(); ++i) {
-//		
-//	}
+//	int size = 0;
+	//tokenizer<> token(str);
+	//for(tokenizer<>::iterator i=token.begin(); i!=token.end(); ++i) {
+	//	size++;
+	//}
+	//char** out;	
+	//int j = 0;
+	//for(tokenizer<>::iterator i=token.begin(); i!=token.end(); ++i) {
+	//	*(out+j) = (*i).c_str();
+	//	++j;
+	//}
+	//return out;
 //}
+
+vector<string> parsecommand(string str) {
+	vector<string> out;
+	char_separator<char> delim(" ");
+	tokenizer< char_separator<char> > token(str, delim);
+	for(tokenizer< char_separator<char> >::iterator i=token.begin(); i!=token.end(); ++i) {
+		out.push_back(*i);
+		cout << "*i: " << *i << endl;
+	}
+	return out;
+}
