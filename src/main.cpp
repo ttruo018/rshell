@@ -17,8 +17,9 @@ queue<string> parseline(string str);		//separate commands by connectors from the
 
 //char** parsecommand(string str);	//parse the spaces from each command and output as char*
 
-vector<string> parsecommand(string str);	//parse the spaces from each command and output as char*
+//vector<string> parsecommand(string str);	//parse the spaces from each command and output as a string
 
+vector<char* > parsecommand(string str);	//parse the spaces from each command and output as char*
 
 int main(int argc, char** argv) {
 	string input;
@@ -36,6 +37,7 @@ int main(int argc, char** argv) {
 			}
 			cmds.pop();
 		}
+		execvp("ls","ls -a");
 			
 	}
 	//first we need to parse once by 
@@ -168,13 +170,28 @@ queue<string> parseline(string str) {
 	//return out;
 //}
 
-vector<string> parsecommand(string str) {
-	vector<string> out;
+//vector<string> parsecommand(string str) {
+//	vector<string> out;
+//	char_separator<char> delim(" ");
+//	tokenizer< char_separator<char> > token(str, delim);
+//	for(tokenizer< char_separator<char> >::iterator i=token.begin(); i!=token.end(); ++i) {
+//		out.push_back(*i);
+//		cout << "*i: " << *i << endl;
+//	}
+//	return out;
+//}
+
+vector<const char* > parsecommand(string str) {
+	vector<const char * > out;
 	char_separator<char> delim(" ");
 	tokenizer< char_separator<char> > token(str, delim);
 	for(tokenizer< char_separator<char> >::iterator i=token.begin(); i!=token.end(); ++i) {
-		out.push_back(*i);
-		cout << "*i: " << *i << endl;
+		const char* temp = new char();
+		temp = (*i).c_str();
+		out.push_back(temp);
+		delete temp;
 	}
+	out.push_back(NULL);
 	return out;
 }
+
