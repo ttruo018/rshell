@@ -36,19 +36,24 @@ int main(int argc, char** argv) {
 		string connect = findconnect(input);	//connect stores every connector
 		queue<string> cmds = parseline(input);
 		while(!cmds.empty()) {
-			cout << "command: " << cmds.front() << endl;
 			char** cstr = new char*[cmds.front().size()];
 			for(unsigned int i=0; i<cmds.front().size(); ++i) {
 				cstr[i] = (char*) malloc (cmds.front().size());
 			}
 			parsecommand(cstr, cmds.front());
 			runexec(cstr);
+
+			cmds.pop();
+
+			//THE FOLLOWING WERE FAILED ATTEMPTS TO UNDERSTAND HOW TO IMPLEMENT
+			//THE PARSECOMMAND FUNCTION
+			//
 			//vector<const char* > param = parsecommand(cmds.front());
 			//vector<const char* > param(cmds.front().size()+1);
 			//parsecommand(param, cmds.front());
 			//for(unsigned int i=0; i<param.size(); ++i) {
 				//for(unsigned int j=0; (param[i][j])!='\0'; ++j) {
-//					cout << "param: " << (param[i][j]) << endl;
+				//	cout << "param: " << (param[i][j]) << endl;
 				//}
 				//execvp(param[0],param);
 				//perror("Didn't work");
@@ -67,7 +72,6 @@ int main(int argc, char** argv) {
 			//}
 			//execvp(test[0], test);
 
-			cmds.pop();
 			//for(unsigned int i=0; i<cmds.front().size(); ++i) {
 			//	delete test[i];
 			//}
@@ -92,20 +96,18 @@ int main(int argc, char** argv) {
 void runexec(char** argv) {
 	int pid = fork();
 	if(pid==-1 ) {	//meaning fork() returned an error
-		perror("Error with fork().");
+		perror("Error with fork(). ");
 		exit(1);
 	}
 	else if(pid==0) {	//meaning we're in the child process
-		cout << "This is the child process." << endl;
-		cout << "argv[0] : " << argv[0] << endl;
 		if(execvp(argv[0], argv)) {
-			perror("There was an error in execvp." );
+			perror("There was an error in execvp. " );
 		}
 		exit(1);
 	}
 	else if(pid>0) {	//meaning we're in the parent process
 		if(wait(0)==-1) {
-			perror("There was an error with wait()." );
+			perror("There was an error with wait(). " );
 		}
 	}
 }
@@ -222,7 +224,9 @@ void parsecommand(char** &cstrarray, string str) {
 	cstrarray[vecstr.size()] = '\0';
 }
 
-//vector<string> parsecommand(string str) {
+// THE FOLLOWING ARE OLD, COMMENTED CODE TO LOOK BACK ON WHAT DOESN'T WORK 
+//
+// vector<string> parsecommand(string str) {	
 //	vector<string> out;
 //	char_separator<char> delim(" ");
 //	tokenizer< char_separator<char> > token(str, delim);
