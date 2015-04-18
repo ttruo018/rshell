@@ -16,14 +16,18 @@ void runexec(char** argv);	//will use system calls to run the
 
 string findconnect(string str);		//outputs a string of every connector
 
+queue<char> qconnect(string connect);		//converts the string of connectors to a queue
+
 queue<string> parseline(string str);		//separate commands by connectors from the original string
 
 void parsecommand(char** &cstrarray, string str);	//parse the spaces from each command and output as char*
 
+char nextconnect(string connect);		//outputs the next connector
+
+//FAILED ATTEMPTS AT THE PARSECOMMAND FUNCTION
+//
 //vector<string> parsecommand(string str);	//parse the spaces from each command and output as a string
-
 //vector<const char* > parsecommand(string str);	//parse the spaces from each command and output as char*
-
 //void parsecommand(vector<const char* > arg, string str);	//parse the spaces from each command and output as char*
 
 
@@ -33,9 +37,12 @@ int main(int argc, char** argv) {
 	while(!end) {
 		cout << "$ ";
 		getline(cin, input);
-		string connect = findconnect(input);	//connect stores every connector
+		string constr = findconnect(input);			
+		queue<char> connect = qconnect(constr);		//connect stores every connector
 		queue<string> cmds = parseline(input);
-		while(!cmds.empty()) {
+		bool cmdend = false;		//tells if a command should end
+		while(!cmds.empty() || !cmdend) {
+			cmdend = false;
 			char** cstr = new char*[cmds.front().size()];
 			for(unsigned int i=0; i<cmds.front().size(); ++i) {
 				cstr[i] = (char*) malloc (cmds.front().size());
@@ -100,7 +107,7 @@ void runexec(char** argv) {
 		exit(1);
 	}
 	else if(pid==0) {	//meaning we're in the child process
-		if(execvp(argv[0], argv)) {
+		if(execvp(argv[0], argv)==-1) {
 			perror("There was an error in execvp. " );
 		}
 		exit(1);
@@ -222,6 +229,10 @@ void parsecommand(char** &cstrarray, string str) {
 		strcpy(cstrarray[j], vecstr[j].c_str());
 	}
 	cstrarray[vecstr.size()] = '\0';
+}
+
+char nextconnect(string connect) {
+	
 }
 
 // THE FOLLOWING ARE OLD, COMMENTED CODE TO LOOK BACK ON WHAT DOESN'T WORK 
