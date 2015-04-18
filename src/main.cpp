@@ -1,3 +1,14 @@
+//THINGS TO DO:
+//
+//first we need to parse once by 
+//using find() to determine the closest
+//connector to the current command
+//
+//then we take the token and execute it
+//
+//then we check the connector to see if we
+//continue running commands
+
 #include <unistd.h>
 #include <stdio.h>
 #include <string>
@@ -11,8 +22,7 @@
 using namespace std;
 using namespace boost;
 
-void runexec(char** argv);	//will use system calls to run the 
-							//commands provided
+bool runexec(char** argv);	//will use system calls to run the commands provided and returns only 0 when sucessful
 
 string findconnect(string str);		//outputs a string of every connector
 
@@ -20,9 +30,7 @@ queue<char> qconnect(string connect);		//converts the string of connectors to a 
 
 queue<string> parseline(string str);		//separate commands by connectors from the original string
 
-void parsecommand(char** &cstrarray, string str);	//parse the spaces from each command and output as char*
-
-char nextconnect(string connect);		//outputs the next connector
+bool parsecommand(char** &cstrarray, string str);	//parse the spaces from each command and output as char*
 
 //FAILED ATTEMPTS AT THE PARSECOMMAND FUNCTION
 //
@@ -41,82 +49,87 @@ int main(int argc, char** argv) {
 		queue<char> connect = qconnect(constr);		//connect stores every connector
 		queue<string> cmds = parseline(input);
 		bool cmdend = false;		//tells if a command should end
-		while(!cmds.empty() || !cmdend) {
+		bool cmdfail = false;		//tracks if a command has failed
+		while(!cmds.empty() && !cmdend && !end) {
 			cmdend = false;
 			char** cstr = new char*[cmds.front().size()];
 			for(unsigned int i=0; i<cmds.front().size(); ++i) {
 				cstr[i] = (char*) malloc (cmds.front().size());
 			}
-			parsecommand(cstr, cmds.front());
-			runexec(cstr);
-
-			cmds.pop();
-
-			//THE FOLLOWING WERE FAILED ATTEMPTS TO UNDERSTAND HOW TO IMPLEMENT
-			//THE PARSECOMMAND FUNCTION
-			//
-			//vector<const char* > param = parsecommand(cmds.front());
-			//vector<const char* > param(cmds.front().size()+1);
-			//parsecommand(param, cmds.front());
-			//for(unsigned int i=0; i<param.size(); ++i) {
-				//for(unsigned int j=0; (param[i][j])!='\0'; ++j) {
-				//	cout << "param: " << (param[i][j]) << endl;
-				//}
-				//execvp(param[0],param);
-				//perror("Didn't work");
-			//}
-			//vector<string> test;
-			//test.push_back("ls ");
-			//test.push_back("-a ");
-			//test.push_back("-l");
-			//char** troll = new char*[test.size()*2];
-			//cout << "test.size() : " << test.size() << endl;
-			//for(unsigned i=0; i< test.size(); ++i) {
-			//	cout << "Errror at " << i << endl;
-			//	cout << "test[" << i << "] : " << test[i] << endl;
-			//	strcpy(troll[i],test[i].c_str());
-			//	cout << "troll[" << i << "] : " << troll[i] << endl;
-			//}
-			//execvp(test[0], test);
-
-			//for(unsigned int i=0; i<cmds.front().size(); ++i) {
-			//	delete test[i];
-			//}
-			//delete [] test;
+			end = parsecommand(cstr, cmds.front());
+			if(!end) {
+				cmdfail = runexec(cstr);		//NEED TO CHANGE runexec()
+				cmds.pop();
+				char next = connect.front();
+				connect.pop();
+				if(next=='&' && !cmdfail) {
+					cmdend = true;
+				}
+				delete [] cstr;
+			}
 		}
 			
 	}
-	//first we need to parse once by 
-	//using find() to determine the closest
-	//connector to the current command
-	//
-	//then we take the token and execute it
-	//
-	//then we check the connector to see if we
-	//continue running commands
-
+	cout << "Exiting from rshell." << endl;
 
 	return 0; 
 }
 
+//THE FOLLOWING WERE FAILED ATTEMPTS TO UNDERSTAND HOW TO IMPLEMENT
+//THE PARSECOMMAND FUNCTION INSIDE THE while(!cmd.empty() || !cmdend) LOOP
+//
+//vector<const char* > param = parsecommand(cmds.front());
+//vector<const char* > param(cmds.front().size()+1);
+//parsecommand(param, cmds.front());
+//for(unsigned int i=0; i<param.size(); ++i) {
+	//for(unsigned int j=0; (param[i][j])!='\0'; ++j) {
+	//	cout << "param: " << (param[i][j]) << endl;
+	//}
+	//execvp(param[0],param);
+	//perror("Didn't work");
+//}
+//vector<string> test;
+//test.push_back("ls ");
+//test.push_back("-a ");
+//test.push_back("-l");
+//char** troll = new char*[test.size()*2];
+//cout << "test.size() : " << test.size() << endl;
+//for(unsigned i=0; i< test.size(); ++i) {
+//	cout << "Errror at " << i << endl;
+//	cout << "test[" << i << "] : " << test[i] << endl;
+//	strcpy(troll[i],test[i].c_str());
+//	cout << "troll[" << i << "] : " << troll[i] << endl;
+//}
+//execvp(test[0], test);
+
+//for(unsigned int i=0; i<cmds.front().size(); ++i) {
+//	delete test[i];
+//}
+//delete [] test;
+
+
 //will use system calls to run the commands provided
-void runexec(char** argv) {
+bool runexec(char** argv) {
 	int pid = fork();
+	int status;
 	if(pid==-1 ) {	//meaning fork() returned an error
 		perror("Error with fork(). ");
 		exit(1);
 	}
 	else if(pid==0) {	//meaning we're in the child process
+		cout << "Running " << argv[0] << endl;
 		if(execvp(argv[0], argv)==-1) {
 			perror("There was an error in execvp. " );
 		}
 		exit(1);
 	}
 	else if(pid>0) {	//meaning we're in the parent process
-		if(wait(0)==-1) {
+		if(wait(&status)==-1) {
 			perror("There was an error with wait(). " );
+			exit(1);
 		}
 	}
+	return (status) ? false : true;
 }
 
 string findconnect(string str) {
@@ -216,7 +229,8 @@ queue<string> parseline(string str) {
 	return out;
 }
 
-void parsecommand(char** &cstrarray, string str) {
+bool parsecommand(char** &cstrarray, string str) {
+	bool endstatus = false;
 	vector<string> vecstr;
 	char_separator<char> delim(" ");
 	tokenizer< char_separator<char> > token(str, delim);
@@ -224,15 +238,23 @@ void parsecommand(char** &cstrarray, string str) {
 	for(tokenizer< char_separator<char> >::iterator i=token.begin(); i!=token.end(); ++i) {
 		vecstr.push_back(*i);
 		++in;
+		if(*i=="exit") {
+			endstatus = true;
+		}
 	}
 	for(unsigned int j=0; j<vecstr.size(); ++j) {
 		strcpy(cstrarray[j], vecstr[j].c_str());
 	}
 	cstrarray[vecstr.size()] = '\0';
+	return endstatus;
 }
 
-char nextconnect(string connect) {
-	
+queue<char> qconnect(string connect) {
+	queue<char> out;
+	for(unsigned i=0; i<connect.size(); ++i) {
+		out.push(connect[i]);
+	}
+	return out;
 }
 
 // THE FOLLOWING ARE OLD, COMMENTED CODE TO LOOK BACK ON WHAT DOESN'T WORK 
