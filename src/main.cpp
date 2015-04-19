@@ -34,6 +34,8 @@ bool parsecommand(char** &cstrarray, string str);	//parse the spaces from each c
 
 string checkcomment(string str);		//checks and takes out comments on the command line
 
+void printinfo();		//prints the username and machine name before the prompt
+
 //FAILED ATTEMPTS AT THE PARSECOMMAND FUNCTION
 //
 //vector<string> parsecommand(string str);	//parse the spaces from each command and output as a string
@@ -45,6 +47,7 @@ int main(int argc, char** argv) {
 	string input;
 	bool end = false;
 	while(!end) {
+		printinfo();
 		cout << "$ ";
 		getline(cin, input);
 		input = checkcomment(input);
@@ -123,7 +126,6 @@ bool runexec(char** argv) {
 		exit(1);
 	}
 	else if(pid==0) {	//meaning we're in the child process
-		cout << "Running " << argv[0] << endl;
 		if(execvp(argv[0], argv)==-1) {
 			perror("There was an error in execvp. " );
 		}
@@ -273,6 +275,22 @@ string checkcomment(string str) {
 	}
 }
 
+void printinfo() {
+	if(getlogin()==NULL) {
+		perror("Could not find username. ");
+	}
+	else {
+		cout << getlogin();
+	}
+	int len = 64;
+	char* machine = new char[len];
+	if(gethostname(machine, len)==-1) {
+		perror("Could not find machine name. ");
+	}
+	else {
+		cout << "@" << machine;
+	}
+}
 // THE FOLLOWING ARE OLD, COMMENTED CODE TO LOOK BACK ON WHAT DOESN'T WORK 
 //
 // vector<string> parsecommand(string str) {	
