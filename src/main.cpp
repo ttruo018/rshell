@@ -32,6 +32,8 @@ queue<string> parseline(string str);		//separate commands by connectors from the
 
 bool parsecommand(char** &cstrarray, string str);	//parse the spaces from each command and output as char*
 
+string checkcomment(string str);		//checks and takes out comments on the command line
+
 //FAILED ATTEMPTS AT THE PARSECOMMAND FUNCTION
 //
 //vector<string> parsecommand(string str);	//parse the spaces from each command and output as a string
@@ -45,6 +47,7 @@ int main(int argc, char** argv) {
 	while(!end) {
 		cout << "$ ";
 		getline(cin, input);
+		input = checkcomment(input);
 		string constr = findconnect(input);			
 		queue<char> connect = qconnect(constr);		//connect stores every connector
 		queue<string> cmds = parseline(input);
@@ -58,11 +61,14 @@ int main(int argc, char** argv) {
 			}
 			end = parsecommand(cstr, cmds.front());
 			if(!end) {
-				cmdfail = runexec(cstr);		//NEED TO CHANGE runexec()
+				cmdfail = runexec(cstr);		//cmdfail tells if the command failed, 0 if failed, 1 if not
 				cmds.pop();
 				char next = connect.front();
 				connect.pop();
-				if(next=='&' && !cmdfail) {
+				if(next=='&' && !cmdfail) {		//if command fails and next connector is &&,
+					cmdend = true;				// then no other remaining commands are run
+				}
+				if(next=='|' && cmdfail) {
 					cmdend = true;
 				}
 				delete [] cstr;
@@ -255,6 +261,16 @@ queue<char> qconnect(string connect) {
 		out.push(connect[i]);
 	}
 	return out;
+}
+
+string checkcomment(string str) {
+	int index = str.find("#");
+	if(index==-1) {
+		return str;
+	}
+	else {
+		return str.substr(0,index);
+	}
 }
 
 // THE FOLLOWING ARE OLD, COMMENTED CODE TO LOOK BACK ON WHAT DOESN'T WORK 
