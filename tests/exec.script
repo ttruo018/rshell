@@ -1,0 +1,163 @@
+Script started on Sun 19 Apr 2015 11:16:55 PM PDT
+~
+ttruo018@hammer $ cd CS100/rshell/
+~/CS100/rshell
+ttruo018@hammer $ bin/rshell 
+ttruo018@hammer.cs.ucr.edu$ ls
+bin  LICENSE  Makefile	README.md  src	test  tests
+ttruo018@hammer.cs.ucr.edu$ ls-  -a
+.  ..  bin  .git  LICENSE  Makefile  README.md	src  test  tests
+ttruo018@hammer.cs.ucr.edu$ ls -al
+total 40
+drwx------ 7 ttruo018 csmajs 4096 Apr 19 23:07 .
+drwx------ 5 ttruo018 csmajs 4096 Apr 11 17:37 ..
+drwx------ 2 ttruo018 csmajs 4096 Apr 19 20:51 bin
+drwx------ 8 ttruo018 csmajs 4096 Apr 19 22:54 .git
+-rw------- 1 ttruo018 csmajs 1473 Apr 11 17:37 LICENSE
+-rw------- 1 ttruo018 csmajs  110 Apr 19 20:51 Makefile
+-rw------- 1 ttruo018 csmajs 1573 Apr 19 22:53 README.md
+drwx------ 2 ttruo018 csmajs 4096 Apr 19 21:45 src
+drwx------ 2 ttruo018 csmajs 4096 Apr 19 23:06 test
+drwx------ 2 ttruo018 csmajs 4096 Apr 19 22:56 tests
+ttruo018@hammer.cs.ucr.edu$ ls -a -l
+total 40
+drwx------ 7 ttruo018 csmajs 4096 Apr 19 23:07 .
+drwx------ 5 ttruo018 csmajs 4096 Apr 11 17:37 ..
+drwx------ 2 ttruo018 csmajs 4096 Apr 19 20:51 bin
+drwx------ 8 ttruo018 csmajs 4096 Apr 19 22:54 .git
+-rw------- 1 ttruo018 csmajs 1473 Apr 11 17:37 LICENSE
+-rw------- 1 ttruo018 csmajs  110 Apr 19 20:51 Makefile
+-rw------- 1 ttruo018 csmajs 1573 Apr 19 22:53 README.md
+drwx------ 2 ttruo018 csmajs 4096 Apr 19 21:45 src
+drwx------ 2 ttruo018 csmajs 4096 Apr 19 23:06 test
+drwx------ 2 ttruo018 csmajs 4096 Apr 19 22:56 tests
+ttruo018@hammer.cs.ucr.edu$ ls                                                           -a                    -l
+total 40
+drwx------ 7 ttruo018 csmajs 4096 Apr 19 23:07 .
+drwx------ 5 ttruo018 csmajs 4096 Apr 11 17:37 ..
+drwx------ 2 ttruo018 csmajs 4096 Apr 19 20:51 bin
+drwx------ 8 ttruo018 csmajs 4096 Apr 19 22:54 .git
+-rw------- 1 ttruo018 csmajs 1473 Apr 11 17:37 LICENSE
+-rw------- 1 ttruo018 csmajs  110 Apr 19 20:51 Makefile
+-rw------- 1 ttruo018 csmajs 1573 Apr 19 22:53 README.md
+drwx------ 2 ttruo018 csmajs 4096 Apr 19 21:45 src
+drwx------ 2 ttruo018 csmajs 4096 Apr 19 23:06 test
+drwx------ 2 ttruo018 csmajs 4096 Apr 19 22:56 tests
+ttruo018@hammer.cs.ucr.edu$ rm  dir test && ls -a; pwd                              &&  p ls  -a         ;   ;    pwd   || ps
+.  ..  bin  .git  LICENSE  Makefile  README.md	src  tests
+/home/csmajs/ttruo018/CS100/rshell
+ttruo018@hammer.cs.ucr.edu$ not a    acommand && ls
+There was an error in execvp. : No such file or directory
+ttruo018@hammer.cs.ucr.edu$ notacommand || pwd
+There was an error in execvp. : No such file or directory
+/home/csmajs/ttruo018/CS100/rshell
+ttruo018@hammer.cs.ucr.edu$ not a  acommand;   ps
+There was an error in execvp. : No such file or directory
+  PID TTY          TIME CMD
+ 4908 pts/10   00:00:00 bash
+ 4922 pts/10   00:00:00 rshell
+ 5581 pts/10   00:00:00 ps
+ttruo018@hammer.cs.ucr.edu$ pwd &&
+/home/csmajs/ttruo018/CS100/rshell
+ttruo018@hammer.cs.ucr.edu$ && pwd
+/home/csmajs/ttruo018/CS100/rshell
+ttruo018@hammer.cs.ucr.edu$ ls ||
+bin  LICENSE  Makefile	README.md  src	tests
+ttruo018@hammer.cs.ucr.edu$ || ls
+bin  LICENSE  Makefile	README.md  src	tests
+ttruo018@hammer.cs.ucr.edu$ ; echo hello            ls ;
+bin  LICENSE  Makefile	README.md  src	tests
+ttruo018@hammer.cs.ucr.edu$ ;ls
+bin  LICENSE  Makefile	README.md  src	tests
+ttruo018@hammer.cs.ucr.edu$ echo only this# will be outpute ted
+only this
+ttruo018@hammer.cs.ucr.edu$ #ls  echo nothing will output
+ttruo018@hammer.cs.ucr.edu$ 
+ttruo018@hammer.cs.ucr.edu$ bin/rshell
+ttruo018@hammer.cs.ucr.edu$ bin/rshell
+ttruo018@hammer.cs.ucr.edu$ ps
+  PID TTY          TIME CMD
+ 4908 pts/10   00:00:00 bash
+ 4922 pts/10   00:00:00 rshell
+ 6118 pts/10   00:00:00 rshell
+ 6129 pts/10   00:00:00 rshell
+ 6134 pts/10   00:00:00 ps
+ttruo018@hammer.cs.ucr.edu$ exit
+Exiting from rshell.
+ttruo018@hammer.cs.ucr.edu$ ps
+  PID TTY          TIME CMD
+ 4908 pts/10   00:00:00 bash
+ 4922 pts/10   00:00:00 rshell
+ 6118 pts/10   00:00:00 rshell
+ 6151 pts/10   00:00:00 ps
+ttruo018@hammer.cs.ucr.edu$ ls && #exit
+bin  LICENSE  Makefile	README.md  src	tests
+ttruo018@hammer.cs.ucr.edu$ pwd && exit
+/home/csmajs/ttruo018/CS100/rshell
+Exiting from rshell.
+ttruo018@hammer.cs.ucr.edu$ ps
+  PID TTY          TIME CMD
+ 4908 pts/10   00:00:00 bash
+ 4922 pts/10   00:00:00 rshell
+ 6242 pts/10   00:00:00 ps
+ttruo018@hammer.cs.ucr.edu$ 0cr93coiwpae
+There was an error in execvp. : No such file or directory
+ttruo018@hammer.cs.ucr.edu$ ls &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& pwd
+bin  LICENSE  Makefile	README.md  src	tests
+/home/csmajs/ttruo018/CS100/rshell
+ttruo018@hammer.cs.ucr.edu$ nota    not  acommane d &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&pwd
+There was an error in execvp. : No such file or directory
+ttruo018@hammer.cs.ucr.edu$ ls |||||||||||||||||||||||||||||||||pwd
+bin  LICENSE  Makefile	README.md  src	tests
+ttruo018@hammer.cs.ucr.edu$ ls  notacommand |||||||||||||||||||||||||||||||||||| p       pwd
+There was an error in execvp. : No such file or directory
+/home/csmajs/ttruo018/CS100/rshell
+ttruo018@hammer.cs.ucr.edu$ ls  echo hello ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; echo world
+hello
+world
+ttruo018@hammer.cs.ucr.edu$ ls bin tests src
+bin:
+rshell
+
+src:
+main.cpp
+
+tests:
+exec.script
+ttruo018@hammer.cs.ucr.edu$ ls bin -a tests -l src
+bin:
+total 92
+drwx------ 2 ttruo018 csmajs  4096 Apr 19 20:51 .
+drwx------ 6 ttruo018 csmajs  4096 Apr 19 23:13 ..
+-rwx------ 1 ttruo018 csmajs 79507 Apr 19 20:51 rshell
+
+src:
+total 20
+drwx------ 2 ttruo018 csmajs 4096 Apr 19 21:45 .
+drwx------ 6 ttruo018 csmajs 4096 Apr 19 23:13 ..
+-rw------- 1 ttruo018 csmajs 8236 Apr 19 16:59 main.cpp
+
+tests:
+total 8
+drwx------ 2 ttruo018 csmajs 4096 Apr 19 22:56 .
+drwx------ 6 ttruo018 csmajs 4096 Apr 19 23:13 ..
+-rw------- 1 ttruo018 csmajs    0 Apr 19 23:11 exec.script
+ttruo018@hammer.cs.ucr.edu$ ls bin doesnotexis ts  st tests src
+ls: cannot access doesnotexist: No such file or directory
+bin:
+rshell
+
+src:
+main.cpp
+
+tests:
+exec.script
+ttruo018@hammer.cs.ucr.edu$ ls ############## -a l -s l
+bin  LICENSE  Makefile	README.md  src	tests
+ttruo018@hammer.cs.ucr.edu$ exit
+Exiting from rshell.
+~/CS100/rshell
+ttruo018@hammer $ exit
+exit
+
+Script done on Sun 19 Apr 2015 11:44:32 PM PDT
