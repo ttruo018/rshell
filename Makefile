@@ -1,5 +1,7 @@
-all: bin
-	g++ -Wall -Werror -ansi -pedantic src/main.cpp -o bin/rshell
+all: bin rshell
 	
+rshell: bin
+	g++ -Wall -Werror -ansi -pedantic src/main.cpp -o bin/rshell
+
 bin: 
 	mkdir bin
