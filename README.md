@@ -12,21 +12,15 @@ But `ls && exit` will perform the `ls` command first, then exit Rshell.
 #Building and Running
 To download, build, and run Rshell, use the following commands:
 
-`$ git clone https://github.com/ttruo018/rshell`
-
-`$ cd rshell`
-
-`$ git checkout hw0`
-
-`$ make`
-
-`$ bin/rshell`
+`$ git clone https://github.com/ttruo018/rshell`   
+`$ cd rshell`   
+`$ git checkout hw0`   
+`$ make`   
+`$ bin/rshell`   
 
 #Known Bugs
 *A single `|` or `&` will let both commands run. 
-It performs the same as the `;` connector.
-
-*Did not handle empty commands yet
-
+It performs the same as the `;` connector.   
+*Did not handle empty commands yet   
 *Having two connectors next to each other has unwanted behavior
 
