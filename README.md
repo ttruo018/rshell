@@ -5,6 +5,9 @@ The shell can run simple commands such as `ls` and `pwd`, as well as the command
 But unlike the bash shell, it cannot run `cd`. 
 It can also use the `;`, `||`, and `&&` connectors (however, there may be bugs if there are two connectors next to each other)
 
+The `exit` command will exit Rshell if run. 
+For example, `ls || exit` will only perform the `ls` command.
+But `ls && exit` will perform the `ls` command first, then exit Rshell.
 
 #Building and Running
 To download, build, and run Rshell, use the following commands:
