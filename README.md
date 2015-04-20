@@ -29,7 +29,7 @@ To download, build, and run Rshell, use the following commands:
 *A single `|` or `&` will let both commands run. 
 It performs the same as the `;` connector.   
 *Did not handle empty commands yet   
-*Having two connectors next to each other has unwanted behavior
+*Having two connectors next to each other has unwanted behavior   
 *Running Rshell in Rshell will only keep track of the newest Rshell.
 Run the `ps` command to check how much Rshells are running.   
 
