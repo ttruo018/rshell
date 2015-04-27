@@ -12,24 +12,33 @@ int checkflags(vector<char* > flags);
 
 int flagset(char flag);
 
+void opendirfile(char* dirfile, int flags);
+
 int main(int argc, char** argv) {
 	if(argc<=1) {		//if true, then no flags passed in
 		cout << "No flags" << endl;		//TEMPORARY
 		//RUN ls on . directory
+		char currentdir[] = ".";
+		opendirfile(currentdir, 0);
 	}
 	else {
-		vector<char* > flags;
+		vector<char* > flagsvec;
 		vector<char* > dirfiles;
-		separatearg(flags, dirfiles, argc, argv);
+		separatearg(flagsvec, dirfiles, argc, argv);
 		//printarg(flags,dirfiles);
 		if(dirfiles.empty()) {
 			//THEN check flags -> run ls on . directory
-			cout << "flags: " <<  checkflags(flags) << endl;
+			int flags = checkflags(flagsvec);
+			char currentdir[] = ".";
+			opendirfile(currentdir, flags);
 
 		}
 		else {
 			//THEN check flags -> run ls on files stated
-			cout << "flags: " <<  checkflags(flags) << endl;
+			int flags = checkflags(flagsvec);
+			for(unsigned int i=0; i<dirfiles.size(); ++i) {
+				opendirfile(dirfiles[i], flags);
+			}
 		}
 		
 	}
@@ -94,4 +103,8 @@ int flagset(char flag) {
 		cout << "Invalid option -- '" << flag << "'" << endl;
 	}
 	return out;
+}
+
+void opendirfile(char* dirfile, int flags) {
+
 }
