@@ -5,22 +5,23 @@ using namespace std;
 
 void separatearg(vector<char* > &flags, vector<char* > &dirfiles, int argc, char** argv);
 
-void printarg(vector<char* > flags, vector<char* > dirfiles);
+void printarg(vector<char* > flags, vector<char* > dirfiles);	//FOR error checking
+
 
 int checkflags(vector<char* > flags);
 
 int flagset(char flag);
 
-
 int main(int argc, char** argv) {
 	if(argc<=1) {		//if true, then no flags passed in
 		cout << "No flags" << endl;		//TEMPORARY
+		//RUN ls on . directory
 	}
 	else {
 		vector<char* > flags;
 		vector<char* > dirfiles;
 		separatearg(flags, dirfiles, argc, argv);
-		printarg(flags,dirfiles);
+		//printarg(flags,dirfiles);
 		if(dirfiles.empty()) {
 			//THEN check flags -> run ls on . directory
 			cout << "flags: " <<  checkflags(flags) << endl;
@@ -32,9 +33,6 @@ int main(int argc, char** argv) {
 		}
 		
 	}
-
-
-
 
 	return 0;
 }
@@ -93,7 +91,7 @@ int flagset(char flag) {
 		out = out | 04;
 	}
 	else {
-		cout << "'" << flag << "' is not a valid flag." << endl;
+		cout << "Invalid option -- '" << flag << "'" << endl;
 	}
 	return out;
 }
