@@ -73,7 +73,7 @@ int main(int argc, char** argv) {
 
 void separatearg(vector<char* > &flags, vector<char* > &dirfiles, int argc, char** argv) {
 	for(int i=1; i<argc; ++i) {
-		cout << "The arguement is " << argv[i] << endl;
+		//cout << "The arguement is " << argv[i] << endl;
 		if(argv[i][0]=='-') {
 			flags.push_back(argv[i]);
 		}
@@ -183,6 +183,7 @@ void opendirfile(char* dirfile, int flags) {
 		//OUTPUT WITH -l STYLE
 	}
 	else {
+		cout << dirfile << ":" << endl;
 		for(unsigned int i=0; i<list.size(); ++i) {
 			linewidth += maxlen;
 			if(linewidth > 80) {
@@ -195,12 +196,20 @@ void opendirfile(char* dirfile, int flags) {
 	}
 	if(flags & 04) {	//checks -R flag
 		//DO -R THINGS
-		/*for(unsigned int i=0; i<list.size(); ++i) {
+		for(unsigned int i=0; i<list.size(); ++i) {
 			if(list[i]!="." && list[i]!="..") {
-				if(S_ISDIR) {
-					opendir(list[i]);
+				string strdirfile = dirfile;
+				list[i] = strdirfile + "/" + list[i];
+				struct stat fd;
+				if(-1 == (stat(list[i].c_str(), &fd))) {
+					cout << "Error on stat calling " << list[i]
+						<< endl;
 				}
-			}*/
+				else if(S_ISDIR(fd.st_mode)) {
+					opendirfile(const_cast<char* >(list[i].c_str()),flags);
+				}
+			}
+		}
 	}
 	if(-1 == closedir(dirp)) {
 		perror("There was an error with closedir(). ");
@@ -209,6 +218,11 @@ void opendirfile(char* dirfile, int flags) {
 }
 
 void singlefile(char* file, int flags) {
-	cout << "single file" << endl;
+	if(flags & 02) {	//checks -l flag
+		//DO -l THINGS
+	}
+	else {
+		cout << file << endl;
+	}
 }
 
