@@ -27,9 +27,10 @@ int flagset(char flag);
 
 void opendirfile(char* dirfile, int flags);
 
+void singlefile(char* file, int flags);
+
 int main(int argc, char** argv) {
 	if(argc<=1) {		//if true, then no flags passed in
-		cout << "No flags" << endl;		//TEMPORARY
 		//RUN ls on . directory
 		char currentdir[] = ".";
 		opendirfile(currentdir, 0);
@@ -50,7 +51,18 @@ int main(int argc, char** argv) {
 			//THEN check flags -> run ls on files stated
 			int flags = checkflags(flagsvec);
 			for(unsigned int i=0; i<dirfiles.size(); ++i) {
-				opendirfile(dirfiles[i], flags);
+				struct stat fd;
+				if(-1 == (stat(dirfiles[i], &fd))) {
+					cout << "Error with stat() called on " << dirfiles[i]
+						<< endl;
+				}
+				else if(S_ISDIR(fd.st_mode)) {
+					opendirfile(dirfiles[i], flags);
+				}
+				else {
+					singlefile(dirfiles[i], flags);
+				}
+
 			}
 		}
 		
@@ -183,15 +195,20 @@ void opendirfile(char* dirfile, int flags) {
 	}
 	if(flags & 04) {	//checks -R flag
 		//DO -R THINGS
-		for(unsigned int i=0; i<list.size(); ++i) {
+		/*for(unsigned int i=0; i<list.size(); ++i) {
 			if(list[i]!="." && list[i]!="..") {
 				if(S_ISDIR) {
 					opendir(list[i]);
 				}
-			}
+			}*/
 	}
 	if(-1 == closedir(dirp)) {
 		perror("There was an error with closedir(). ");
 		exit(1);
 	}
 }
+
+void singlefile(char* file, int flags) {
+	cout << "single file" << endl;
+}
+
