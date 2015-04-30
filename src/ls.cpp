@@ -1,5 +1,18 @@
 #include <iostream>
 #include <vector>
+#include <dirent.h>
+#include <sys/types.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <string.h>
+#include <iomanip>
+#include <algorithm>
+#include <string>
+#include <cctype>
 
 using namespace std;
 
@@ -105,6 +118,80 @@ int flagset(char flag) {
 	return out;
 }
 
-void opendirfile(char* dirfile, int flags) {
+//bool cstrcomp(const char* a, const char* b) {
+//	char const** char_a = a;
+//	char const** char_b = b;
+	//return ((strcmp(a, b)<0) ? false : true);
+//}
 
+bool stringcomp(string a, string b) {
+	for(unsigned int i=0; i<a.size() && i<b.size(); ++i) {
+		if(tolower(b[i]) < tolower(a[i])) {
+			return false;
+		}
+		else if(tolower(a[i]) < tolower(b[i])) {
+			return true;
+		}
+	}
+	if(b.size() < a.size()) {
+		return false;
+	}
+	else {
+		return true;
+	}
+}
+
+void opendirfile(char* dirfile, int flags) {
+	DIR* dirp;
+	if(NULL == (dirp = opendir(dirfile))) {
+		perror("Error with opendir(). ");
+		exit(1);
+	}
+	struct dirent *filespecs;
+	vector<string> list;
+	unsigned char maxlen = 0;
+	errno = 0;
+	while(NULL != (filespecs = readdir(dirp))) {
+		if((filespecs->d_name[0]!='.') || (flags & 01)) {	//checks flag a
+			list.push_back(filespecs->d_name);
+			if(maxlen < strlen(filespecs->d_name)) {
+				maxlen = strlen(filespecs->d_name);
+			}
+		}
+	}
+	if(errno != 0) {
+		perror("There was an error with readdir(). ");
+		exit(1);
+	}
+	maxlen += 3;
+	sort(list.begin(), list.end(), stringcomp);
+	unsigned int linewidth = 0;
+	cout << left;
+	if(flags & 02) {	//checks -l flag
+		//OUTPUT WITH -l STYLE
+	}
+	else {
+		for(unsigned int i=0; i<list.size(); ++i) {
+			linewidth += maxlen;
+			if(linewidth > 80) {
+				cout << "\n";
+				linewidth = 0;
+			}
+			cout << setw(maxlen) << list[i];
+		}
+		cout << endl;
+	}
+	if(flags & 04) {	//checks -R flag
+		//DO -R THINGS
+		for(unsigned int i=0; i<list.size(); ++i) {
+			if(list[i]!="." && list[i]!="..") {
+				if(S_ISDIR) {
+					opendir(list[i]);
+				}
+			}
+	}
+	if(-1 == closedir(dirp)) {
+		perror("There was an error with closedir(). ");
+		exit(1);
+	}
 }
