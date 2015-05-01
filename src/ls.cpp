@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <string>
 #include <cctype>
+#include <time.h>
 
 using namespace std;
 
@@ -29,6 +30,8 @@ void opendirfile(char* dirfile, int flags);
 
 void singlefile(char* file, int flags);
 
+void loutput(char* file);
+
 int main(int argc, char** argv) {
 	if(argc<=1) {		//if true, then no flags passed in
 		//RUN ls on . directory
@@ -40,16 +43,14 @@ int main(int argc, char** argv) {
 		vector<char* > dirfiles;
 		separatearg(flagsvec, dirfiles, argc, argv);
 		//printarg(flags,dirfiles);
+		int flags = checkflags(flagsvec);
 		if(dirfiles.empty()) {
 			//THEN check flags -> run ls on . directory
-			int flags = checkflags(flagsvec);
 			char currentdir[] = ".";
 			opendirfile(currentdir, flags);
-
 		}
 		else {
 			//THEN check flags -> run ls on files stated
-			int flags = checkflags(flagsvec);
 			for(unsigned int i=0; i<dirfiles.size(); ++i) {
 				struct stat fd;
 				if(-1 == (stat(dirfiles[i], &fd))) {
@@ -109,7 +110,7 @@ int checkflags(vector<char* > flags) {
 			}
 		}
 	}
-	cout << "flags: " << out << endl;
+	//cout << "flags: " << out << endl;
 	return out;
 }
 
@@ -162,10 +163,12 @@ void opendirfile(char* dirfile, int flags) {
 	struct dirent *filespecs;
 	vector<string> list;
 	unsigned char maxlen = 0;
+	unsigned int totalsize = 0;
 	errno = 0;
 	while(NULL != (filespecs = readdir(dirp))) {
 		if((filespecs->d_name[0]!='.') || (flags & 01)) {	//checks flag a
 			list.push_back(filespecs->d_name);
+			totalsize += strlen(filespecs->d_name);
 			if(maxlen < strlen(filespecs->d_name)) {
 				maxlen = strlen(filespecs->d_name);
 			}
@@ -181,21 +184,30 @@ void opendirfile(char* dirfile, int flags) {
 	cout << left;
 	if(flags & 02) {	//checks -l flag
 		//OUTPUT WITH -l STYLE
+		for(unsigned int i=0; i<list.size(); ++i) {
+			loutput(const_cast<char* >(list[i].c_str()));
+		}
 	}
 	else {
-		cout << dirfile << ":" << endl;
-		for(unsigned int i=0; i<list.size(); ++i) {
-			linewidth += maxlen;
-			if(linewidth > 80) {
-				cout << "\n";
-				linewidth = 0;
-			}
-			cout << setw(maxlen) << list[i];
+		if(flags & 04) {
+			cout << dirfile << ":" << endl;
 		}
-		cout << endl;
+		for(unsigned int i=0; i<list.size(); ++i) {
+			if(totalsize < 70) {
+				cout << list[i] << "  ";
+			}
+			else {
+				linewidth += maxlen;
+				if(linewidth > 80) {
+					cout << "\n";
+					linewidth = 0;
+				}
+				cout << setw(maxlen) << list[i];
+			}
+		}
+		cout <<  endl;
 	}
 	if(flags & 04) {	//checks -R flag
-		//DO -R THINGS
 		for(unsigned int i=0; i<list.size(); ++i) {
 			if(list[i]!="." && list[i]!="..") {
 				string strdirfile = dirfile;
@@ -206,6 +218,7 @@ void opendirfile(char* dirfile, int flags) {
 						<< endl;
 				}
 				else if(S_ISDIR(fd.st_mode)) {
+					cout << endl;
 					opendirfile(const_cast<char* >(list[i].c_str()),flags);
 				}
 			}
@@ -220,9 +233,53 @@ void opendirfile(char* dirfile, int flags) {
 void singlefile(char* file, int flags) {
 	if(flags & 02) {	//checks -l flag
 		//DO -l THINGS
+		loutput(file);
+		cout << file << endl;
 	}
 	else {
 		cout << file << endl;
 	}
 }
 
+void loutput(char* file) {
+	struct stat fd;
+	if(-1 == (stat(file, &fd))) {
+		cout << "Error with stat calling " << file << endl;
+	}
+	if(S_ISREG(fd.st_mode)) {
+		cout << '-';
+	}
+	else if(S_ISDIR(fd.st_mode)) {
+		cout << 'd';
+	}
+	else if(S_ISCHR(fd.st_mode)) {
+		cout << 'c';
+	}
+	else if(S_ISBLK(fd.st_mode)) {
+		cout << 'b';
+	}
+	else if(S_ISLNK(fd.st_mode)) {
+		cout << 'l';
+	}
+	(fd.st_mode & S_IRUSR) ? (cout << 'r') : (cout << '-');
+	(fd.st_mode & S_IWUSR) ? (cout << 'w') : (cout << '-');
+	(fd.st_mode & S_IXUSR) ? (cout << 'x') : (cout << '-');
+	(fd.st_mode & S_IRGRP) ? (cout << 'r') : (cout << '-');
+	(fd.st_mode & S_IWGRP) ? (cout << 'w') : (cout << '-');
+	(fd.st_mode & S_IXGRP) ? (cout << 'x') : (cout << '-');
+	(fd.st_mode & S_IROTH) ? (cout << 'r') : (cout << '-');
+	(fd.st_mode & S_IWOTH) ? (cout << 'w') : (cout << '-');
+	(fd.st_mode & S_IXOTH) ? (cout << 'x') : (cout << '-');
+	cout << ' ';
+	cout << fd.st_nlink << ' ';
+	printf("%d ", fd.st_uid);
+	cout << fd.st_gid << ' ';
+	cout << fd.st_size << ' ';
+	//char* date = ctime(&(fd.st_ctime));
+	struct tm* filetime;
+	filetime = localtime(&fd.st_ctime);
+	char buf[30];
+	strftime(buf, 30, "%b %d %H:%M", filetime);
+	cout << buf << ' ';
+	cout << file << endl;
+}
