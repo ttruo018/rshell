@@ -398,7 +398,7 @@ void colorout(string dir, string str, int width) {
 			cout << "\033[32m";
 	}
 	if(S_ISDIR(file.st_mode))  cout << "\033[34m";
-	if(str.at(0)=='.') cout << "\033[41m";	//replace color with grey, currently red
+	if(str.at(0)=='.') cout << "\033[1;40m";	//replace color with grey, currently red
 	if(width != -1)
 	{
 		cout << setw(width);
