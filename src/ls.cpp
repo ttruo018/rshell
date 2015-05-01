@@ -14,6 +14,8 @@
 #include <string>
 #include <cctype>
 #include <time.h>
+#include <pwd.h>
+#include <grp.h>
 
 using namespace std;
 
@@ -180,8 +182,34 @@ void opendirfile(char* dirfile, int flags) {
 	}
 	maxlen += 3;
 	sort(list.begin(), list.end(), stringcomp);
+	if(flags & 02) {
+		unsigned int blksize = 0;
+		for(unsigned int i=0; i<list.size(); ++i) {
+			if(list[i]!="." && list[i]!="..") {
+				struct stat fd;
+				if(-1 == (stat(dirfile,&fd))) {
+					cout << "Error with calling stat on " << dirfile << endl;
+				}
+				else {
+					blksize += fd.st_blocks;
+				}
+			}
+		}
+		cout << "total " << blksize << endl;
+	}
+	if(flags & 06) {
+		for(unsigned int i=0; i< list.size(); ++i) {
+			if(list[i]!="." && list[i]!="..") {
+				string strdirfile = dirfile;
+				list[i] = strdirfile + "/" + list[i];
+			}
+		}
+	}
 	unsigned int linewidth = 0;
 	cout << left;
+	if(flags & 04) {
+			cout << dirfile << ":" << endl;
+	}
 	if(flags & 02) {	//checks -l flag
 		//OUTPUT WITH -l STYLE
 		for(unsigned int i=0; i<list.size(); ++i) {
@@ -189,9 +217,6 @@ void opendirfile(char* dirfile, int flags) {
 		}
 	}
 	else {
-		if(flags & 04) {
-			cout << dirfile << ":" << endl;
-		}
 		for(unsigned int i=0; i<list.size(); ++i) {
 			if(totalsize < 70) {
 				cout << list[i] << "  ";
@@ -210,8 +235,6 @@ void opendirfile(char* dirfile, int flags) {
 	if(flags & 04) {	//checks -R flag
 		for(unsigned int i=0; i<list.size(); ++i) {
 			if(list[i]!="." && list[i]!="..") {
-				string strdirfile = dirfile;
-				list[i] = strdirfile + "/" + list[i];
 				struct stat fd;
 				if(-1 == (stat(list[i].c_str(), &fd))) {
 					cout << "Error on stat calling " << list[i]
@@ -272,14 +295,21 @@ void loutput(char* file) {
 	(fd.st_mode & S_IXOTH) ? (cout << 'x') : (cout << '-');
 	cout << ' ';
 	cout << fd.st_nlink << ' ';
-	printf("%d ", fd.st_uid);
-	cout << fd.st_gid << ' ';
+	struct passwd *usr;
+	usr = getpwuid(fd.st_uid);
+	cout << usr->pw_name << ' ';
+	struct group *grp;
+	grp = getgrgid(fd.st_gid);
+	cout << grp->gr_name << ' ';
 	cout << fd.st_size << ' ';
-	//char* date = ctime(&(fd.st_ctime));
 	struct tm* filetime;
 	filetime = localtime(&fd.st_ctime);
 	char buf[30];
 	strftime(buf, 30, "%b %d %H:%M", filetime);
 	cout << buf << ' ';
-	cout << file << endl;
+	string strfile = file;
+	int fileloc= strfile.find_last_of("/");
+	(fileloc==-1) ? cout << strfile : cout << strfile.substr(fileloc+1);
+	cout << " " << fd.st_blocks;
+	cout << endl;
 }
