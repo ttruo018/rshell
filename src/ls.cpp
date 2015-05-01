@@ -32,11 +32,13 @@ void opendirfile(char* dirfile, int flags);
 
 void singlefile(char* file, int flags);
 
-void loutput(char* file, vector<string> &perm, vector<string> &link, vector<string> &usrid, 
-				vector<string> &grpid, vector<string> &fsize, vector<string> &date, 
-				vector<string> &fname);
+void loutput(char* file, vector<string> &perm, vector<string> &link, 
+				vector<string> &usrid, vector<string> &grpid, vector<string> &fsize, 
+				vector<string> &date, vector<string> &fname);
 
 unsigned int largvecelem(vector<string> v);
+
+void colorout(string dir, string str, int width);
 
 int main(int argc, char** argv) {
 	if(argc<=1) {		//if true, then no flags passed in
@@ -116,7 +118,7 @@ int checkflags(vector<char* > flags) {
 			}
 		}
 	}
-	//cout << "flags: " << out << endl;
+	//cout << "\033[31mflags: " << out << endl;
 	return out;
 }
 
@@ -231,7 +233,7 @@ void opendirfile(char* dirfile, int flags) {
 		unsigned int grpidlen = largvecelem(grpid);
 		unsigned int fsizelen = largvecelem(fsize);
 		unsigned int datelen = largvecelem(date);
-		unsigned int fnamelen = largvecelem(fname);
+		//unsigned int fnamelen = largvecelem(fname);
 		for(unsigned int i=0; i<fname.size(); ++i) {
 			cout << right;
 			cout << setw(permlen) << perm[i] << ' ';
@@ -241,14 +243,15 @@ void opendirfile(char* dirfile, int flags) {
 			cout << setw(fsizelen) << fsize[i] << ' ';
 			cout << setw(datelen) << date[i] << ' ';
 			cout << left;
-			cout << setw(fnamelen) << fname[i] << ' ';
+			colorout(dirfile, fname[i], -1);
 			cout << endl;
 		}
 	}
 	else {
 		for(unsigned int i=0; i<list.size(); ++i) {
 			if(totalsize < 70) {
-				cout << list[i] << "  ";
+				colorout(dirfile, list[i], -1);
+				cout << "  ";
 			}
 			else {
 				linewidth += maxlen;
@@ -256,7 +259,7 @@ void opendirfile(char* dirfile, int flags) {
 					cout << "\n";
 					linewidth = 0;
 				}
-				cout << setw(maxlen) << list[i];
+				colorout(dirfile, list[i], maxlen);
 			}
 		}
 		cout <<  endl;
@@ -292,74 +295,62 @@ void singlefile(char* file, int flags) {
 	vector<string> fname;
 	if(flags & 02) {	//checks -l flag
 		loutput(file, perm, link, usrid, grpid, fsize, date, fname);
-		cout << file << endl;
+		cout << perm[0] << ' ';
+		cout << link[0] << ' ';
+		cout << usrid[0] << ' ';
+		cout << grpid[0] << ' ';
+		cout << fsize[0] << ' ';
+		cout << date[0] << ' ';
+		colorout("", file, -1);
+		cout << endl;
 	}
 	else {
-		cout << file << endl;
+		colorout("", file, -1);
 	}
 }
 
-void loutput(char* file, vector<string> &perm, vector<string> &link, vector<string> &usrid, 
-				vector<string> &grpid, vector<string> &fsize, vector<string> &date,
-				vector<string> &fname) {
+void loutput(char* file, vector<string> &perm, vector<string> &link, 
+				vector<string> &usrid, vector<string> &grpid, vector<string> &fsize, 
+				vector<string> &date,	vector<string> &fname) {
 	struct stat fd;
 	if(-1 == (stat(file, &fd))) {
 		cout << "Error with stat calling " << file << endl;
 	}
 	if(S_ISREG(fd.st_mode)) {
-//		cout << '-';
 		perm.push_back("-");
 	}
 	else if(S_ISDIR(fd.st_mode)) {
-//		cout << 'd';
 		perm.push_back("d");
 	}
 	else if(S_ISCHR(fd.st_mode)) {
-//		cout << 'c';
 		perm.push_back("c");
 	}
 	else if(S_ISBLK(fd.st_mode)) {
-//		cout << 'b';
 		perm.push_back("b");
 	}
 	else if(S_ISLNK(fd.st_mode)) {
-//		cout << 'l';
 		perm.push_back("l");
 	}
-//	(fd.st_mode & S_IRUSR) ? (cout << 'r') : (cout << '-');
-//	(fd.st_mode & S_IWUSR) ? (cout << 'w') : (cout << '-');
-//	(fd.st_mode & S_IXUSR) ? (cout << 'x') : (cout << '-');
-//	(fd.st_mode & S_IRGRP) ? (cout << 'r') : (cout << '-');
-//	(fd.st_mode & S_IWGRP) ? (cout << 'w') : (cout << '-');
-//	(fd.st_mode & S_IXGRP) ? (cout << 'x') : (cout << '-');
-//	(fd.st_mode & S_IROTH) ? (cout << 'r') : (cout << '-');
-//	(fd.st_mode & S_IWOTH) ? (cout << 'w') : (cout << '-');
-//	(fd.st_mode & S_IXOTH) ? (cout << 'x') : (cout << '-');
-(fd.st_mode&S_IRUSR)?perm[perm.size()-1]=(perm.back()+"r"):perm[perm.size()-1]=(perm.back()+"-");
-(fd.st_mode&S_IWUSR)?perm[perm.size()-1]=(perm.back()+"w"):perm[perm.size()-1]=(perm.back()+"-");
-(fd.st_mode&S_IXUSR)?perm[perm.size()-1]=(perm.back()+"x"):perm[perm.size()-1]=(perm.back()+"-");
-(fd.st_mode&S_IRGRP)?perm[perm.size()-1]=(perm.back()+"r"):perm[perm.size()-1]=(perm.back()+"-");
-(fd.st_mode&S_IWGRP)?perm[perm.size()-1]=(perm.back()+"w"):perm[perm.size()-1]=(perm.back()+"-");
-(fd.st_mode&S_IXGRP)?perm[perm.size()-1]=(perm.back()+"x"):perm[perm.size()-1]=(perm.back()+"-");
-(fd.st_mode&S_IROTH)?perm[perm.size()-1]=(perm.back()+"r"):perm[perm.size()-1]=(perm.back()+"-");
-(fd.st_mode&S_IWOTH)?perm[perm.size()-1]=(perm.back()+"w"):perm[perm.size()-1]=(perm.back()+"-");
-(fd.st_mode&S_IXOTH)?perm[perm.size()-1]=(perm.back()+"x"):perm[perm.size()-1]=(perm.back()+"-");
+	(fd.st_mode&S_IRUSR)?perm[perm.size()-1]=(perm.back()+"r"):perm[perm.size()-1]=(perm.back()+"-");
+	(fd.st_mode&S_IWUSR)?perm[perm.size()-1]=(perm.back()+"w"):perm[perm.size()-1]=(perm.back()+"-");
+	(fd.st_mode&S_IXUSR)?perm[perm.size()-1]=(perm.back()+"x"):perm[perm.size()-1]=(perm.back()+"-");
+	(fd.st_mode&S_IRGRP)?perm[perm.size()-1]=(perm.back()+"r"):perm[perm.size()-1]=(perm.back()+"-");
+	(fd.st_mode&S_IWGRP)?perm[perm.size()-1]=(perm.back()+"w"):perm[perm.size()-1]=(perm.back()+"-");
+	(fd.st_mode&S_IXGRP)?perm[perm.size()-1]=(perm.back()+"x"):perm[perm.size()-1]=(perm.back()+"-");
+	(fd.st_mode&S_IROTH)?perm[perm.size()-1]=(perm.back()+"r"):perm[perm.size()-1]=(perm.back()+"-");
+	(fd.st_mode&S_IWOTH)?perm[perm.size()-1]=(perm.back()+"w"):perm[perm.size()-1]=(perm.back()+"-");
+	(fd.st_mode&S_IXOTH)?perm[perm.size()-1]=(perm.back()+"x"):perm[perm.size()-1]=(perm.back()+"-");
 
-//	cout << ' ';
-//	cout << fd.st_nlink << ' ';
 	char numlink[20];
 	int nlink = fd.st_nlink;
 	sprintf(numlink, "%d", nlink);
 	link.push_back(numlink);
 	struct passwd *usr;
 	usr = getpwuid(fd.st_uid);
-//	cout << usr->pw_name << ' ';
 	usrid.push_back(usr->pw_name);
 	struct group *grp;
 	grp = getgrgid(fd.st_gid);
-//	cout << grp->gr_name << ' ';
 	grpid.push_back(grp->gr_name);
-//	cout << fd.st_size << ' ';
 	char numfsize[20];
 	int nfsize = fd.st_size;
 	sprintf(numfsize, "%d" , nfsize);
@@ -378,14 +369,10 @@ void loutput(char* file, vector<string> &perm, vector<string> &link, vector<stri
 	else {
 		strftime(buf, 30, "%b %e %H:%M", filetime);
 	}
-//	cout << buf << ' ';
 	date.push_back(buf);
 	string strfile = file;
 	int fileloc= strfile.find_last_of("/");
-//	(fileloc==-1) ? cout << strfile : cout << strfile.substr(fileloc+1);
 	(fileloc==-1) ? fname.push_back(strfile) : fname.push_back(strfile.substr(fileloc+1));
-
-//	cout << endl;
 }
 
 unsigned int largvecelem(vector<string> v) {
@@ -398,3 +385,23 @@ unsigned int largvecelem(vector<string> v) {
 	return out;
 }
 
+void colorout(string dir, string str, int width) {
+	string path;
+	if(dir!="") {
+		path = dir + "/" + str;
+	}
+	struct stat file;
+	if(-1 == (stat(path.c_str(), &file))) {
+		cout << "Error with stat calling " << str << endl;
+	}
+	if(S_ISREG(file.st_mode) && (file.st_mode & (S_IXUSR|S_IXGRP|S_IXOTH))) {
+			cout << "\033[32m";
+	}
+	if(S_ISDIR(file.st_mode))  cout << "\033[34m";
+	if(str.at(0)=='.') cout << "\033[41m";	//replace color with grey, currently red
+	if(width != -1)
+	{
+		cout << setw(width);
+	}
+	cout << str << "\033[0m"; //<< "\033[45m";
+}
