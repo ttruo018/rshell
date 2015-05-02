@@ -32,12 +32,12 @@ To build, and run Rshell, use the following commands:
 `$ make`   
 `$ bin/rshell`   
 
-To build, and run ls, use the following commands:
+To build, and run ls, use the following commands:    
 `$ git checkout hw1`   
 `$ make`   
 `$ bin/ls`   
 
-The all binary executables will be in the bin directory of the rshell directory.
+All binary executables will be in the bin directory of the rshell directory.
 
 ##Known Bugs and Issues
 ###rshell
