@@ -28,6 +28,8 @@ int checkflags(vector<char* > flags);
 
 int flagset(char flag);
 
+bool stringcomp(string a, string b); 
+
 void opendirfile(char* dirfile, int flags);
 
 void singlefile(char* file, int flags);
@@ -43,7 +45,7 @@ void colorout(string dir, string str, int width);
 int main(int argc, char** argv) {
 	if(argc<=1) {		//if true, then no flags passed in
 		//RUN ls on . directory
-		char currentdir[] = ".";
+		char currentdir[2] = ".";
 		opendirfile(currentdir, 0);
 	}
 	else {
@@ -52,29 +54,37 @@ int main(int argc, char** argv) {
 		separatearg(flagsvec, dirfiles, argc, argv);
 		//printarg(flags,dirfiles);
 		int flags = checkflags(flagsvec);
+		sort(dirfiles.begin(), dirfiles.end());
 		if(dirfiles.empty()) {
 			//THEN check flags -> run ls on . directory
-			char currentdir[] = ".";
+			char currentdir[2] = ".";
 			opendirfile(currentdir, flags);
 		}
 		else {
 			//THEN check flags -> run ls on files stated
 			for(unsigned int i=0; i<dirfiles.size(); ++i) {
-				struct stat fd;
-				if(-1 == (stat(dirfiles[i], &fd))) {
-					cout << "Error with stat() called on " << dirfiles[i]
-						<< endl;
-				}
-				else if(S_ISDIR(fd.st_mode)) {
-					opendirfile(dirfiles[i], flags);
+				if(-1 == (open(dirfiles[i], O_RDONLY))) {
+					perror("Error with open(). ");
 				}
 				else {
-					singlefile(dirfiles[i], flags);
+					struct stat fd;
+					if(-1 == (stat(dirfiles[i], &fd))) {
+						cout << "Error with stat() called on " << dirfiles[i]
+							<< endl;
+					}
+					else if(S_ISDIR(fd.st_mode)) {
+						if(!(flags & 04) && dirfiles.size() > 1) {
+							cout << dirfiles[i] << ":" << endl;
+						}
+						opendirfile(dirfiles[i], flags);
+					}
+					else {
+						singlefile(dirfiles[i], flags);
+					}
 				}
-
 			}
-		}
 		
+		}
 	}
 
 	return 0;
@@ -82,7 +92,6 @@ int main(int argc, char** argv) {
 
 void separatearg(vector<char* > &flags, vector<char* > &dirfiles, int argc, char** argv) {
 	for(int i=1; i<argc; ++i) {
-		//cout << "The arguement is " << argv[i] << endl;
 		if(argv[i][0]=='-') {
 			flags.push_back(argv[i]);
 		}
@@ -118,7 +127,6 @@ int checkflags(vector<char* > flags) {
 			}
 		}
 	}
-	//cout << "\033[31mflags: " << out << endl;
 	return out;
 }
 
@@ -140,7 +148,7 @@ int flagset(char flag) {
 }
 
 //bool cstrcomp(const char* a, const char* b) {
-//	char const** char_a = a;
+	//string char_a = a;
 //	char const** char_b = b;
 	//return ((strcmp(a, b)<0) ? false : true);
 //}
@@ -185,6 +193,12 @@ void opendirfile(char* dirfile, int flags) {
 	if(errno != 0) {
 		perror("There was an error with readdir(). ");
 		exit(1);
+	}	
+	string strdirfile = dirfile;
+	for(unsigned int i=0; i< list.size(); ++i) {
+		if(list[i]!="." && list[i]!="..") {
+			list[i] = strdirfile + "/" + list[i];
+		}
 	}
 	maxlen += 3;
 	sort(list.begin(), list.end(), stringcomp);
@@ -192,30 +206,21 @@ void opendirfile(char* dirfile, int flags) {
 		unsigned int blksize = 0;
 		for(unsigned int i=0; i<list.size(); ++i) {
 			struct stat fd;
-			if(-1 == (stat(dirfile,&fd))) {
-				cout << "Error with calling stat on " << dirfile << endl;
+			if(-1 == (stat(list[i].c_str(),&fd))) {
+				cout << "Error with calling stat on " << list[i] << endl;
 			}
 			else {
-				blksize += (fd.st_blocks/2);
+				blksize += fd.st_blocks;
 			}
 		}
-		cout << "total " << blksize << endl;
-	}
-	if(flags & 06) {
-		for(unsigned int i=0; i< list.size(); ++i) {
-			if(list[i]!="." && list[i]!="..") {
-				string strdirfile = dirfile;
-				list[i] = strdirfile + "/" + list[i];
-			}
-		}
+		cout << "total " << blksize/2 << endl;
 	}
 	unsigned int linewidth = 0;
 	cout << left;
 	if(flags & 04) {
-			cout << dirfile << ":" << endl;
+			cout << strdirfile << ":" << endl;
 	}
 	if(flags & 02) {	//checks -l flag
-		//unsigned int outlen = 0;
 		vector<string> perm;
 		vector<string> link;
 		vector<string> usrid;
@@ -314,7 +319,7 @@ void loutput(char* file, vector<string> &perm, vector<string> &link,
 				vector<string> &date,	vector<string> &fname) {
 	struct stat fd;
 	if(-1 == (stat(file, &fd))) {
-		cout << "Error with stat calling " << file << endl;
+		cout << "Error with lstat calling " << file << endl;
 	}
 	if(S_ISREG(fd.st_mode)) {
 		perm.push_back("-");
@@ -346,10 +351,16 @@ void loutput(char* file, vector<string> &perm, vector<string> &link,
 	sprintf(numlink, "%d", nlink);
 	link.push_back(numlink);
 	struct passwd *usr;
-	usr = getpwuid(fd.st_uid);
+	if(0 == (usr = getpwuid(fd.st_uid))) {
+		cout << "Error with getpwuid()." << endl;
+		exit(1);
+	}
 	usrid.push_back(usr->pw_name);
 	struct group *grp;
-	grp = getgrgid(fd.st_gid);
+	if(0 == (grp = getgrgid(fd.st_gid))) {
+		cout << "Error with getgrgid()." << endl;
+		exit(1);
+	}
 	grpid.push_back(grp->gr_name);
 	char numfsize[20];
 	int nfsize = fd.st_size;
@@ -361,7 +372,7 @@ void loutput(char* file, vector<string> &perm, vector<string> &link,
 	currtime = localtime(&now);
 	struct tm* filetime;
 	int curryear = currtime->tm_year;
-	filetime = localtime(&fd.st_ctime);
+	filetime = localtime(&fd.st_mtime);
 	char buf[30];
 	if(curryear != filetime->tm_year) {
 		strftime(buf, 30, "%b %e %Y", filetime);
@@ -371,8 +382,7 @@ void loutput(char* file, vector<string> &perm, vector<string> &link,
 	}
 	date.push_back(buf);
 	string strfile = file;
-	int fileloc= strfile.find_last_of("/");
-	(fileloc==-1) ? fname.push_back(strfile) : fname.push_back(strfile.substr(fileloc+1));
+	fname.push_back(strfile);
 }
 
 unsigned int largvecelem(vector<string> v) {
@@ -386,22 +396,20 @@ unsigned int largvecelem(vector<string> v) {
 }
 
 void colorout(string dir, string str, int width) {
-	string path;
-	if(dir!="") {
-		path = dir + "/" + str;
-	}
 	struct stat file;
-	if(-1 == (stat(path.c_str(), &file))) {
-		cout << "Error with stat calling " << str << endl;
+	if(-1 == (stat(str.c_str(), &file))) {
+		cout << "Error cwith stat calling " << str << endl;
 	}
 	if(S_ISREG(file.st_mode) && (file.st_mode & (S_IXUSR|S_IXGRP|S_IXOTH))) {
 			cout << "\033[32m";
 	}
 	if(S_ISDIR(file.st_mode))  cout << "\033[34m";
-	if(str.at(0)=='.') cout << "\033[1;40m";	//replace color with grey, currently red
+	
+	int filepos = str.find_last_of("/\\");
+	if(str.at(filepos+1)=='.') cout << "\033[1;40m";
 	if(width != -1)
 	{
 		cout << setw(width);
 	}
-	cout << str << "\033[0m"; //<< "\033[45m";
+	cout << str.substr(filepos+1) << "\033[0m";
 }
