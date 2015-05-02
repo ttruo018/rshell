@@ -369,6 +369,7 @@ void loutput(char* file, vector<string> &perm, vector<string> &link,
 
 	char numlink[20];
 	int nlink = fd.st_nlink;
+	//cout << file << "NUMLINK:" << nlink << endl;	//DELETE
 	sprintf(numlink, "%d", nlink);
 	link.push_back(numlink);
 	struct passwd *usr;

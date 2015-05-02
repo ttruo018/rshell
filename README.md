@@ -8,7 +8,7 @@ Commands and connectors are read left to right.
 
 ###Connectors
 Connectors such as `;`, `||`, and `&&` can be used in between commands on a single line.
-Some of the connectors' behaviors are:     
+Some of the connectors behaviors are:     
 *Connectors with more than two characters, ex `&&&&&&` or `||||`,
 will be treated the same as two character connectors `&&` and `||`.     
 *Currently, there is a bug when only one character, like `&` and `|`
@@ -37,7 +37,7 @@ To build, and run ls, use the following commands:
 `$ make`   
 `$ bin/ls`   
 
-The rshell binary executable will be in the bin directory of the rshell directory.
+The all binary executables will be in the bin directory of the rshell directory.
 
 ##Known Bugs and Issues
 ###rshell
@@ -53,6 +53,8 @@ getpwuid() and getgrgid(), can become
 common if using -a, -l and -R flags together    
 *running -l may cause the error `do_ypcall: clnt_call: 
 RPC: Unable to send; errno = Operation not permitted`    
-*The number of links and time are not correct 
-for the . and .. folders    
+*The number of links on the . directories and time on the 
+.. directories can be incorrect.     
+*When using -l on symbolic links, the output does not show 
+what the file is linked to, unlike the GNU ls.   
 
