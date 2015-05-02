@@ -26,7 +26,7 @@ void printarg(vector<char* > flags, vector<char* > dirfiles);	//FOR error checki
 
 int checkflags(vector<char* > flags);
 
-int flagset(char flag);
+int flagset(char flag, vector<char> &invalid);
 
 bool cstrcomp(char* a, char* b); 
 
@@ -125,16 +125,17 @@ int checkflags(vector<char* > flags) {
 		return out;
 	}
 	else{
+		vector<char> invalid;
 		for(unsigned int i=0; i<flags.size(); ++i) {
 			for(unsigned int j=1; flags[i][j]!=0; ++j) {
-				out = out | flagset(flags[i][j]);
+				out = out | flagset(flags[i][j], invalid);
 			}
 		}
 	}
 	return out;
 }
 
-int flagset(char flag) {
+int flagset(char flag, vector<char> &invalid) {
 	int out = 0;
 	if(flag=='a') {
 		out = out | 01;
@@ -145,7 +146,8 @@ int flagset(char flag) {
 	else if(flag=='R') {
 		out = out | 04;
 	}
-	else {
+	else if(invalid.end() == find(invalid.begin(), invalid.end(),flag)) {
+		invalid.push_back(flag);
 		cout << "Invalid option -- '" << flag << "'" << endl;
 	}
 	return out;
@@ -332,6 +334,7 @@ void singlefile(char* file, int flags) {
 	}
 	else {
 		colorout("", file, -1);
+		cout << endl;
 	}
 }
 
