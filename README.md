@@ -21,6 +21,12 @@ Typing an `exit` command will exit Rshell if run.
 For example, `ls || exit` will only perform the `ls` command.
 But `ls && exit` will perform the `ls` command first, then exit Rshell.
 
+##ls   
+This ls command runs similar to the GNU ls command, 
+but only being able to use the flags `-a`, `-l`, and `R`. 
+The ls can be run passing in any combination of these flags 
+as well as any file or directory.
+
 ##Building and Running
 To download:
 `$ git clone https://github.com/ttruo018/rshell`   
@@ -53,8 +59,8 @@ getpwuid() and getgrgid(), can become
 common if using -a, -l and -R flags together    
 *running -l may cause the error `do_ypcall: clnt_call: 
 RPC: Unable to send; errno = Operation not permitted`    
-*The number of links on the . directories and time on the 
-.. directories can be incorrect.     
+*The number of links on the . directories can be incorrect.    
+*The time on the .. directories can be incorrect.     
 *When using -l on symbolic links, the output does not show 
 what the file is linked to, unlike the GNU ls.   
 
