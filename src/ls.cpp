@@ -339,11 +339,17 @@ void loutput(char* file, vector<string> &perm, vector<string> &link,
 				vector<string> &usrid, vector<string> &grpid, vector<string> &fsize, 
 				vector<string> &date,	vector<string> &fname) {
 	struct stat fd;
-	if(-1 == (stat(file, &fd))) {
+	if(-1 == (lstat(file, &fd))) {
 		cout << "Error with lstat calling " << file << endl;
 	}
 	if(S_ISLNK(fd.st_mode)) {
 		perm.push_back("l");
+	}
+		else if(S_ISDIR(fd.st_mode)) {
+		perm.push_back("d");
+	}
+	else if(S_ISREG(fd.st_mode)) {
+		perm.push_back("-");
 	}
 	else if(S_ISCHR(fd.st_mode)) {
 		perm.push_back("c");
@@ -351,13 +357,6 @@ void loutput(char* file, vector<string> &perm, vector<string> &link,
 	else if(S_ISBLK(fd.st_mode)) {
 		perm.push_back("b");
 	}
-	else if(S_ISDIR(fd.st_mode)) {
-		perm.push_back("d");
-	}
-	else if(S_ISREG(fd.st_mode)) {
-		perm.push_back("-");
-	}
-
 	(fd.st_mode&S_IRUSR)?perm[perm.size()-1]=(perm.back()+"r"):perm[perm.size()-1]=(perm.back()+"-");
 	(fd.st_mode&S_IWUSR)?perm[perm.size()-1]=(perm.back()+"w"):perm[perm.size()-1]=(perm.back()+"-");
 	(fd.st_mode&S_IXUSR)?perm[perm.size()-1]=(perm.back()+"x"):perm[perm.size()-1]=(perm.back()+"-");
