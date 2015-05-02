@@ -158,6 +158,23 @@ bool cstrcomp(char* a, char* b) {
 }
 
 bool stringcomp(string a, string b) {
+	if(a==".") return true;
+	if(b==".") return false;
+	int fileloca = a.find_last_of("/\\");
+	int filelocb = b.find_last_of("/\\");
+	if(fileloca != -1) {
+		a = a.substr(fileloca+1);
+	}
+	if(filelocb != -1) {
+		b = b.substr(filelocb+1);
+	}
+	if(a.at(0) == '.') {
+		a.erase(0,1);
+	}
+	if(b.at(0) == '.') {
+		b.erase(0,1);
+	}
+	//cout << a << " " << b << endl;	//DELETE
 	for(unsigned int i=0; i<a.size() && i<b.size(); ++i) {
 		if(tolower(b[i]) < tolower(a[i])) {
 			return false;
@@ -325,11 +342,8 @@ void loutput(char* file, vector<string> &perm, vector<string> &link,
 	if(-1 == (stat(file, &fd))) {
 		cout << "Error with lstat calling " << file << endl;
 	}
-	if(S_ISREG(fd.st_mode)) {
-		perm.push_back("-");
-	}
-	else if(S_ISDIR(fd.st_mode)) {
-		perm.push_back("d");
+	if(S_ISLNK(fd.st_mode)) {
+		perm.push_back("l");
 	}
 	else if(S_ISCHR(fd.st_mode)) {
 		perm.push_back("c");
@@ -337,9 +351,13 @@ void loutput(char* file, vector<string> &perm, vector<string> &link,
 	else if(S_ISBLK(fd.st_mode)) {
 		perm.push_back("b");
 	}
-	else if(S_ISLNK(fd.st_mode)) {
-		perm.push_back("l");
+	else if(S_ISDIR(fd.st_mode)) {
+		perm.push_back("d");
 	}
+	else if(S_ISREG(fd.st_mode)) {
+		perm.push_back("-");
+	}
+
 	(fd.st_mode&S_IRUSR)?perm[perm.size()-1]=(perm.back()+"r"):perm[perm.size()-1]=(perm.back()+"-");
 	(fd.st_mode&S_IWUSR)?perm[perm.size()-1]=(perm.back()+"w"):perm[perm.size()-1]=(perm.back()+"-");
 	(fd.st_mode&S_IXUSR)?perm[perm.size()-1]=(perm.back()+"x"):perm[perm.size()-1]=(perm.back()+"-");
