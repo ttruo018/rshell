@@ -28,6 +28,8 @@ int checkflags(vector<char* > flags);
 
 int flagset(char flag);
 
+bool cstrcomp(char* a, char* b); 
+
 bool stringcomp(string a, string b); 
 
 void opendirfile(char* dirfile, int flags);
@@ -54,7 +56,7 @@ int main(int argc, char** argv) {
 		separatearg(flagsvec, dirfiles, argc, argv);
 		//printarg(flags,dirfiles);
 		int flags = checkflags(flagsvec);
-		sort(dirfiles.begin(), dirfiles.end());
+		sort(dirfiles.begin(), dirfiles.end(),cstrcomp);
 		if(dirfiles.empty()) {
 			//THEN check flags -> run ls on . directory
 			char currentdir[2] = ".";
@@ -64,7 +66,9 @@ int main(int argc, char** argv) {
 			//THEN check flags -> run ls on files stated
 			for(unsigned int i=0; i<dirfiles.size(); ++i) {
 				if(-1 == (open(dirfiles[i], O_RDONLY))) {
-					perror("Error with open(). ");
+					string file = dirfiles[i];
+					string err = "ls: cannot open " + file;
+					perror(err.c_str());
 				}
 				else {
 					struct stat fd;
@@ -147,11 +151,11 @@ int flagset(char flag) {
 	return out;
 }
 
-//bool cstrcomp(const char* a, const char* b) {
-	//string char_a = a;
-//	char const** char_b = b;
-	//return ((strcmp(a, b)<0) ? false : true);
-//}
+bool cstrcomp(char* a, char* b) {
+	string stra = a;
+	string strb = b;
+	return stringcomp(stra, strb);
+}
 
 bool stringcomp(string a, string b) {
 	for(unsigned int i=0; i<a.size() && i<b.size(); ++i) {
