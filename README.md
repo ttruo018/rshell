@@ -8,7 +8,7 @@ Commands and connectors are read left to right.
 
 ###Connectors
 Connectors such as `;`, `||`, and `&&` can be used in between commands on a single line.
-Some of the connectors behaviors are:     
+Some of the connectors' behaviors are:     
 *Connectors with more than two characters, ex `&&&&&&` or `||||`,
 will be treated the same as two character connectors `&&` and `||`.     
 *Currently, there is a bug when only one character, like `&` and `|`
@@ -22,10 +22,13 @@ For example, `ls || exit` will only perform the `ls` command.
 But `ls && exit` will perform the `ls` command first, then exit Rshell.
 
 ##ls   
-This ls command runs similar to the GNU ls command, 
+This `ls` command runs similar to the GNU `ls` command, 
 but only being able to use the flags `-a`, `-l`, and `R`. 
-The ls can be run passing in any combination of these flags 
-as well as any file or directory.
+Any combination of these flags as well as any 
+file or directory can be passed along with the `ls`. 
+The `-a` command makes `ls` print hidden files. 
+The `-l` command makes `ls` print info about each file or 
+directory. The `R` flag make `ls` run recursively. 
 
 ##Building and Running
 To download:
@@ -53,14 +56,14 @@ It performs the same as the `;` connector.
 *Running Rshell in Rshell will only keep track of the newest Rshell.
 Run the `ps` command to check how much Rshells are running.   
 ###ls
-*running -l and -R in any combination on a folder 
+*running `-l` and `-R` in any combination on a folder 
 containing many directories may cause errors with 
 getpwuid() and getgrgid(), can become
-common if using -a, -l and -R flags together    
-*running -l may cause the error `do_ypcall: clnt_call: 
+common if using `-a`, `-l` and `-R` flags together    
+*running `-l` may cause the error `do_ypcall: clnt_call: 
 RPC: Unable to send; errno = Operation not permitted`    
-*The number of links on the . directories can be incorrect.    
-*The time on the .. directories can be incorrect.     
-*When using -l on symbolic links, the output does not show 
-what the file is linked to, unlike the GNU ls.   
+*The number of links on the `.` directories can be incorrect.    
+*The time on the `..` directories can be incorrect.     
+*When using `-l` on symbolic links, the output does not show 
+what the file is linked to, unlike the GNU `ls`.   
 
