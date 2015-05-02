@@ -22,21 +22,37 @@ For example, `ls || exit` will only perform the `ls` command.
 But `ls && exit` will perform the `ls` command first, then exit Rshell.
 
 ##Building and Running
-To download, build, and run Rshell, use the following commands:
-
+To download:
 `$ git clone https://github.com/ttruo018/rshell`   
 `$ cd rshell`   
+
+To build, and run Rshell, use the following commands:
+
 `$ git checkout hw0`   
 `$ make`   
 `$ bin/rshell`   
 
+To build, and run ls, use the following commands:
+`$ git checkout hw1`   
+`$ make`   
+`$ bin/ls`   
+
 The rshell binary executable will be in the bin directory of the rshell directory.
 
 ##Known Bugs and Issues
+###rshell
 *A single `|` or `&` will let both commands run. 
 It performs the same as the `;` connector.   
 *Empty arguements may have unexpected behavior    
 *Running Rshell in Rshell will only keep track of the newest Rshell.
 Run the `ps` command to check how much Rshells are running.   
-
+###ls
+*running -l and -R in any combination on a folder 
+containing many directories may cause errors with 
+getpwuid() and getgrgid(), can become
+common if using -a, -l and -R flags together    
+*running -l may cause the error `do_ypcall: clnt_call: 
+RPC: Unable to send; errno = Operation not permitted`    
+*The number of links and time are not correct 
+for the . and .. folders    
 
