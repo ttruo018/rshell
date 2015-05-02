@@ -409,7 +409,11 @@ void colorout(string dir, string str, int width) {
 	if(str.at(filepos+1)=='.') cout << "\033[1;40m";
 	if(width != -1)
 	{
-		cout << setw(width);
+		cout << str.substr(filepos+1);
+		cout << "\033[0m";
+		cout << setw(width-str.size()) << ' ';
 	}
-	cout << str.substr(filepos+1) << "\033[0m";
+	else {
+		cout << str.substr(filepos+1) << "\033[0m";
+	}
 }
