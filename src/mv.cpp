@@ -14,12 +14,7 @@ using namespace std;
 int main(int argc, char** argv)
 {
     struct stat statbuf;
-    if(-1 == stat(argv[2], &statbuf))
-    {
-        perror("stat");
-        exit(1);
-    }
-    if(S_ISDIR(statbuf.st_mode))
+    if((0 == stat(argv[2], &statbuf)) && S_ISDIR(statbuf.st_mode))
     {
         string directory = argv[2];
         string file_name = argv[1];
