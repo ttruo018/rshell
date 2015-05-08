@@ -22,7 +22,7 @@
 using namespace std;
 using namespace boost;
 
-bool runexec(char** argv);	//will use system calls to run the commands provided and returns only 0 when sucessful
+bool runexec(vector<char* > argv);	//will use system calls to run the commands provided and returns only 0 when sucessful
 
 string findconnect(string str);		//outputs a string of every connector
 
@@ -30,18 +30,14 @@ queue<char> qconnect(string connect);		//converts the string of connectors to a 
 
 queue<string> parseline(string str);		//separate commands by connectors from the original string
 
-bool parsecommand(char** &cstrarray, string str);	//parse the spaces from each command and output as char*
+//bool parsecommand(char** &cstrarray, string str);	//parse the spaces from each command and output as char*
+vector<char* > parsecommand(bool &end, string str);
 
 string checkcomment(string str);		//checks and takes out comments on the command line
 
 void printinfo();		//prints the username and machine name before the prompt
 
-//FAILED ATTEMPTS AT THE PARSECOMMAND FUNCTION
-//
-//vector<string> parsecommand(string str);	//parse the spaces from each command and output as a string
-//vector<const char* > parsecommand(string str);	//parse the spaces from each command and output as char*
-//void parsecommand(vector<const char* > arg, string str);	//parse the spaces from each command and output as char*
-
+bool iomode(string line);
 
 int main(int argc, char** argv) {
 	string input;
@@ -51,18 +47,30 @@ int main(int argc, char** argv) {
 		cout << "$ ";
 		getline(cin, input);
 		input = checkcomment(input);
+		bool redirect = iomode(input);
+		if(redirect) {
+			//PARSE BY '>', '<', AND '|' CHARACTERS
+			cout << "io redirection mode" << endl;
+		}
+		else {
+			//PARSE BY '&', '|', AND ';' CHARACTERS
+			cout << "connector mode" << endl;
+		}
 		string constr = findconnect(input);			
 		queue<char> connect = qconnect(constr);		//connect stores every connector
 		queue<string> cmds = parseline(input);
+
 		bool cmdend = false;		//tells if a command should end
 		bool cmdfail = false;		//tracks if a command has failed
 		while(!cmds.empty() && !cmdend && !end) {
 			cmdend = false;
-			char** cstr = new char*[cmds.front().size()];
-			for(unsigned int i=0; i<cmds.front().size(); ++i) {
-				cstr[i] = (char*) malloc (cmds.front().size());
-			}
-			end = parsecommand(cstr, cmds.front());
+			//char** cstr = new char*[cmds.front().size()];
+			vector<char* > cstr;
+			//for(unsigned int i=0; i<cmds.front().size(); ++i) {
+			//	cstr[i] = (char*) malloc (cmds.front().size());
+			//}
+			//end = parsecommand(cstr, cmds.front());
+			cstr = parsecommand(end, cmds.front());
 			if(!end) {
 				cmdfail = runexec(cstr);		//cmdfail tells if the command failed, 0 if failed, 1 if not
 				cmds.pop();
@@ -74,7 +82,10 @@ int main(int argc, char** argv) {
 				if(next=='|' && cmdfail) {
 					cmdend = true;
 				}
-				delete [] cstr;
+				//for(unsigned int i=0; i<cmds.front().size(); ++i) {
+				//	free(cstr[i]);
+				//}
+				//delete cstr;
 			}
 		}
 			
@@ -84,41 +95,15 @@ int main(int argc, char** argv) {
 	return 0; 
 }
 
-//THE FOLLOWING WERE FAILED ATTEMPTS TO UNDERSTAND HOW TO IMPLEMENT
-//THE PARSECOMMAND FUNCTION INSIDE THE while(!cmd.empty() || !cmdend) LOOP
-//
-//vector<const char* > param = parsecommand(cmds.front());
-//vector<const char* > param(cmds.front().size()+1);
-//parsecommand(param, cmds.front());
-//for(unsigned int i=0; i<param.size(); ++i) {
-	//for(unsigned int j=0; (param[i][j])!='\0'; ++j) {
-	//	cout << "param: " << (param[i][j]) << endl;
-	//}
-	//execvp(param[0],param);
-	//perror("Didn't work");
-//}
-//vector<string> test;
-//test.push_back("ls ");
-//test.push_back("-a ");
-//test.push_back("-l");
-//char** troll = new char*[test.size()*2];
-//cout << "test.size() : " << test.size() << endl;
-//for(unsigned i=0; i< test.size(); ++i) {
-//	cout << "Errror at " << i << endl;
-//	cout << "test[" << i << "] : " << test[i] << endl;
-//	strcpy(troll[i],test[i].c_str());
-//	cout << "troll[" << i << "] : " << troll[i] << endl;
-//}
-//execvp(test[0], test);
-
-//for(unsigned int i=0; i<cmds.front().size(); ++i) {
-//	delete test[i];
-//}
-//delete [] test;
-
-
 //will use system calls to run the commands provided
-bool runexec(char** argv) {
+bool runexec(vector<char* > argv) {
+	char** cmd = new char*[argv.size()+1];
+	for(unsigned int i=0; i<argv.size(); ++i) {
+		//cout << "argv[" << i << "]: " << argv[i] << endl;
+		cmd[i] = argv[i];
+		//cout << "cmd[" << i << "]: " << cmd[i] << endl;
+	}
+	cmd[argv.size()] = '\0';
 	int pid = fork();
 	int status;
 	if(pid==-1 ) {	//meaning fork() returned an error
@@ -126,7 +111,7 @@ bool runexec(char** argv) {
 		exit(1);
 	}
 	else if(pid==0) {	//meaning we're in the child process
-		if(execvp(argv[0], argv)==-1) {
+		if(execvp(cmd[0], cmd)==-1) {
 			perror("There was an error in execvp. " );
 		}
 		exit(1);
@@ -137,6 +122,7 @@ bool runexec(char** argv) {
 			exit(1);
 		}
 	}
+	delete[] cmd;
 	return (status) ? false : true;
 }
 
@@ -237,24 +223,29 @@ queue<string> parseline(string str) {
 	return out;
 }
 
-bool parsecommand(char** &cstrarray, string str) {
-	bool endstatus = false;
-	vector<string> vecstr;
+//bool parsecommand(char** &cstrarray, string str) {
+vector<char* > parsecommand(bool &end, string str) {
+	end = false;
+	vector<char* > vecstr;
 	char_separator<char> delim(" ");
 	tokenizer< char_separator<char> > token(str, delim);
-	unsigned int in =0;
+	unsigned int cnt = 0;
 	for(tokenizer< char_separator<char> >::iterator i=token.begin(); i!=token.end(); ++i) {
-		vecstr.push_back(*i);
-		++in;
 		if(*i=="exit") {
-			endstatus = true;
+			end = true;
 		}
+		//char arg[BUFSIZ];
+		cout << cnt << ": " <<  *i << endl;			//DELETE
+		//char * temp = strcpy(arg, (*i).c_str());
+		//cout << arg << endl;		//DELETE
+		vecstr.push_back(const_cast<char* >((*i).c_str()));
+		cout << vecstr.at(cnt) << endl;
+		cnt++;
 	}
-	for(unsigned int j=0; j<vecstr.size(); ++j) {
-		strcpy(cstrarray[j], vecstr[j].c_str());
+	for(unsigned int i=0; i<vecstr.size(); ++i) {		//DELETE
+		cout << "vecstr[ " << i << "]: " << vecstr[i] << endl;
 	}
-	cstrarray[vecstr.size()] = '\0';
-	return endstatus;
+	return vecstr;
 }
 
 queue<char> qconnect(string connect) {
@@ -291,30 +282,21 @@ void printinfo() {
 		cout << "@" << machine;
 	}
 }
-// THE FOLLOWING ARE OLD, COMMENTED CODE TO LOOK BACK ON WHAT DOESN'T WORK 
-//
-// vector<string> parsecommand(string str) {	
-//	vector<string> out;
-//	char_separator<char> delim(" ");
-//	tokenizer< char_separator<char> > token(str, delim);
-//	for(tokenizer< char_separator<char> >::iterator i=token.begin(); i!=token.end(); ++i) {
-//		out.push_back(*i);
-//		cout << "*i: " << *i << endl;
-//	}
-//	return out;
-//}
 
-//vector<const char* > parsecommand(string str) {
-//void parsecommand(vector<const char* > arg, string str) {
-//	vector<string> strarray;
-//	char_separator<char> delim(" ");
-//	tokenizer< char_separator<char> > token(str, delim);
-//	for(tokenizer< char_separator<char> >::iterator i=token.begin(); i!=token.end(); ++i) {
-//		strarray.push_back(*i);
-//	}
-//	for(unsigned int i=0; i<strarray.size(); ++i) {
-//		arg[i] = &(strarray[i][0]);
-//	}
-//	arg[strarray.size()] = NULL;
-//}
+bool iomode(string line) {
+	int outdirect = line.find('>');
+	int indirect = line.find('<');
+	int pipe = line.find('|');
+	int andconnect = line.find('&');
+	int semiconnect = line.find(';');
+	if(-1!=outdirect || -1!=indirect) {
+		return true;
+	}
+	else if(-1!=pipe && (-1==andconnect || -1==semiconnect)) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
 
