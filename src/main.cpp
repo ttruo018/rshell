@@ -23,7 +23,6 @@ queue<char> qconnect(string connect);		//converts the string of connectors to a 
 
 queue<string> parseline(string str);		//separate commands by connectors from the original string
 
-//bool parsecommand(char** &cstrarray, string str);	//parse the spaces from each command and output as char*
 vector<string> parsecommand(bool &end, string str);
 
 string checkcomment(string str);		//checks and takes out comments on the command line
@@ -57,12 +56,7 @@ int main(int argc, char** argv) {
 		bool cmdfail = false;		//tracks if a command has failed
 		while(!cmds.empty() && !cmdend && !end) {
 			cmdend = false;
-			//char** cstr = new char*[cmds.front().size()];
 			vector<string> cstr;
-			//for(unsigned int i=0; i<cmds.front().size(); ++i) {
-			//	cstr[i] = (char*) malloc (cmds.front().size());
-			//}
-			//end = parsecommand(cstr, cmds.front());
 			cstr = parsecommand(end, cmds.front());
 			if(!end) {
 				cmdfail = runexec(cstr);		//cmdfail tells if the command failed, 0 if failed, 1 if not
@@ -75,16 +69,11 @@ int main(int argc, char** argv) {
 				if(next=='|' && cmdfail) {
 					cmdend = true;
 				}
-				//for(unsigned int i=0; i<cmds.front().size(); ++i) {
-				//	free(cstr[i]);
-				//}
-				//delete cstr;
 			}
 		}
 			
 	}
 	cout << "Exiting from rshell." << endl;
-
 	return 0; 
 }
 
@@ -92,9 +81,7 @@ int main(int argc, char** argv) {
 bool runexec(const vector<string> argv) {
 	char** cmd = new char*[argv.size()+1];
 	for(unsigned int i=0; i<argv.size(); ++i) {
-		//cout << "argv[" << i << "]: " << argv[i] << endl;
 		cmd[i] = const_cast<char* >((argv[i]).c_str());
-		//cout << "cmd[" << i << "]: " << cmd[i] << endl;
 	}
 	cmd[argv.size()] = '\0';
 	int pid = fork();
@@ -219,7 +206,6 @@ queue<string> parseline(string str) {
 	return out;
 }
 
-//bool parsecommand(char** &cstrarray, string str) {
 vector<string> parsecommand(bool &end, string str) {
 	end = false;
 	vector<string> vecstr;
@@ -231,17 +217,10 @@ vector<string> parsecommand(bool &end, string str) {
 			end = true;
 			return vecstr;
 		}
-		//char arg[BUFSIZ];
-		cout << cnt << ": " <<  *i << endl;			//DELETE
-		//char * temp = strcpy(arg, (*i).c_str());
-		//cout << arg << endl;		//DELETE
 		string tmp = *i;
 		vecstr.emplace_back(tmp);
 		cout << vecstr.at(cnt) << endl;
 		cnt++;
-	}
-	for(unsigned int i=0; i<vecstr.size(); ++i) {		//DELETE
-		cout << "vecstr[ " << i << "]: " << vecstr[i] << endl;
 	}
 	return vecstr;
 }
@@ -293,7 +272,13 @@ bool iomode(string line) {
 		return true;
 	}
 	else if(-1!=pipe && (-1==andconnect || -1==semiconnect)) {
-		return true;
+		int secondpipe = line.find('|', pipe+1);
+		if(secondpipe==(pipe+1)) {
+			return false;
+		}
+		else {
+			return true;
+		}
 	}
 	else {
 		return false;
