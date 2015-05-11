@@ -1,17 +1,10 @@
 //THINGS TO DO:
 //
-//first we need to parse once by 
-//using find() to determine the closest
-//connector to the current command
-//
-//then we take the token and execute it
-//
-//then we check the connector to see if we
-//continue running commands
 
 #include <unistd.h>
 #include <stdio.h>
 #include <string>
+#include <vector>
 #include <iostream>
 #include <boost/tokenizer.hpp>
 #include <queue>
@@ -22,7 +15,7 @@
 using namespace std;
 using namespace boost;
 
-bool runexec(vector<char* > argv);	//will use system calls to run the commands provided and returns only 0 when sucessful
+bool runexec(vector<string> argv);	//will use system calls to run the commands provided and returns only 0 when sucessful
 
 string findconnect(string str);		//outputs a string of every connector
 
@@ -31,7 +24,7 @@ queue<char> qconnect(string connect);		//converts the string of connectors to a 
 queue<string> parseline(string str);		//separate commands by connectors from the original string
 
 //bool parsecommand(char** &cstrarray, string str);	//parse the spaces from each command and output as char*
-vector<char* > parsecommand(bool &end, string str);
+vector<string> parsecommand(bool &end, string str);
 
 string checkcomment(string str);		//checks and takes out comments on the command line
 
@@ -65,7 +58,7 @@ int main(int argc, char** argv) {
 		while(!cmds.empty() && !cmdend && !end) {
 			cmdend = false;
 			//char** cstr = new char*[cmds.front().size()];
-			vector<char* > cstr;
+			vector<string> cstr;
 			//for(unsigned int i=0; i<cmds.front().size(); ++i) {
 			//	cstr[i] = (char*) malloc (cmds.front().size());
 			//}
@@ -96,11 +89,11 @@ int main(int argc, char** argv) {
 }
 
 //will use system calls to run the commands provided
-bool runexec(vector<char* > argv) {
+bool runexec(const vector<string> argv) {
 	char** cmd = new char*[argv.size()+1];
 	for(unsigned int i=0; i<argv.size(); ++i) {
 		//cout << "argv[" << i << "]: " << argv[i] << endl;
-		cmd[i] = argv[i];
+		cmd[i] = const_cast<char* >((argv[i]).c_str());
 		//cout << "cmd[" << i << "]: " << cmd[i] << endl;
 	}
 	cmd[argv.size()] = '\0';
@@ -108,17 +101,20 @@ bool runexec(vector<char* > argv) {
 	int status;
 	if(pid==-1 ) {	//meaning fork() returned an error
 		perror("Error with fork(). ");
+		delete[] cmd;
 		exit(1);
 	}
 	else if(pid==0) {	//meaning we're in the child process
 		if(execvp(cmd[0], cmd)==-1) {
 			perror("There was an error in execvp. " );
 		}
+		delete[] cmd;
 		exit(1);
 	}
 	else if(pid>0) {	//meaning we're in the parent process
 		if(wait(&status)==-1) {
 			perror("There was an error with wait(). " );
+			delete[] cmd;
 			exit(1);
 		}
 	}
@@ -224,21 +220,23 @@ queue<string> parseline(string str) {
 }
 
 //bool parsecommand(char** &cstrarray, string str) {
-vector<char* > parsecommand(bool &end, string str) {
+vector<string> parsecommand(bool &end, string str) {
 	end = false;
-	vector<char* > vecstr;
+	vector<string> vecstr;
 	char_separator<char> delim(" ");
 	tokenizer< char_separator<char> > token(str, delim);
 	unsigned int cnt = 0;
 	for(tokenizer< char_separator<char> >::iterator i=token.begin(); i!=token.end(); ++i) {
 		if(*i=="exit") {
 			end = true;
+			return vecstr;
 		}
 		//char arg[BUFSIZ];
 		cout << cnt << ": " <<  *i << endl;			//DELETE
 		//char * temp = strcpy(arg, (*i).c_str());
 		//cout << arg << endl;		//DELETE
-		vecstr.push_back(const_cast<char* >((*i).c_str()));
+		string tmp = *i;
+		vecstr.emplace_back(tmp);
 		cout << vecstr.at(cnt) << endl;
 		cnt++;
 	}
@@ -277,10 +275,12 @@ void printinfo() {
 	char* machine = new char[len];
 	if(gethostname(machine, len)==-1) {
 		perror("Could not find machine name. ");
+		delete[] machine;
 	}
 	else {
 		cout << "@" << machine;
 	}
+	delete[] machine;
 }
 
 bool iomode(string line) {
