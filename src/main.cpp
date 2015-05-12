@@ -17,11 +17,15 @@ using namespace boost;
 
 bool runexec(vector<string> argv);	//will use system calls to run the commands provided and returns only 0 when sucessful
 
+bool runio(queue<string> &cmds, queue<char> &connect);
+
 string findconnect(string str);		//outputs a string of every connector
 
-queue<char> qconnect(string connect);		//converts the string of connectors to a queue
+queue<string> findio(string str);			//outputs a string of each io redirection or pipe
 
-queue<string> parseline(string str);		//separate commands by connectors from the original string
+queue<char> strtoq(string connect);		//converts the string of connectors to a queue
+
+queue<string> parseline(string str, bool iomode);	//separate commands by connectors from the original string
 
 vector<string> parsecommand(bool &end, string str);
 
@@ -39,35 +43,52 @@ int main(int argc, char** argv) {
 		cout << "$ ";
 		getline(cin, input);
 		input = checkcomment(input);
+		string constr;			
+		queue<string> iosym;
+		queue<char> connect;		//connect stores every connector
+		queue<string> cmds;
+
 		bool redirect = iomode(input);
 		if(redirect) {
 			//PARSE BY '>', '<', AND '|' CHARACTERS
 			cout << "io redirection mode" << endl;
+
+			iosym = findio(input);			
+			cmds = parseline(input, redirect);
+
 		}
 		else {
 			//PARSE BY '&', '|', AND ';' CHARACTERS
 			cout << "connector mode" << endl;
-		}
-		string constr = findconnect(input);			
-		queue<char> connect = qconnect(constr);		//connect stores every connector
-		queue<string> cmds = parseline(input);
+			constr = findconnect(input);			
+			connect = strtoq(constr);		//connect stores every connector
+			cmds = parseline(input, redirect);
 
+		}
+	
 		bool cmdend = false;		//tells if a command should end
 		bool cmdfail = false;		//tracks if a command has failed
 		while(!cmds.empty() && !cmdend && !end) {
-			cmdend = false;
-			vector<string> cstr;
-			cstr = parsecommand(end, cmds.front());
-			if(!end) {
-				cmdfail = runexec(cstr);		//cmdfail tells if the command failed, 0 if failed, 1 if not
-				cmds.pop();
-				char next = connect.front();
-				connect.pop();
-				if(next=='&' && !cmdfail) {		//if command fails and next connector is &&,
-					cmdend = true;				// then no other remaining commands are run
-				}
-				if(next=='|' && cmdfail) {
-					cmdend = true;
+			if(redirect) {
+				cmdend = runio(cmds, connect);
+				
+			}
+			else {
+				cmdend = false;
+				vector<string> cstr;
+				cstr = parsecommand(end, cmds.front());
+				if(!end) {
+					cmdfail = runexec(cstr);		//cmdfail tells if the command failed, 0 if failed, 1 if not
+					cmds.pop();
+					char next = connect.front();
+					connect.pop();
+					if(next=='&' && !cmdfail) {		//if command fails and next connector is &&,
+						cmdend = true;				// then no other remaining commands are run
+					}
+					if(next=='|' && cmdfail) {
+						cmdend = true;
+					}
+					cout << "DELETE" << cmds.front() << endl;
 				}
 			}
 		}
@@ -195,9 +216,20 @@ string findconnect(string str) {
 	return out;
 }
 
-queue<string> parseline(string str) {
+queue<string> parseline(string str, bool iomode) {
 	queue<string> out;
-	char_separator<char> delim(";&|");
+	char something[4];
+	if(iomode) {
+		something[0] = '<';	
+		something[1] = '>';	
+		something[2] = '|';	
+	}
+	else {
+		something[0] = '&';	
+		something[1] = ';';	
+		something[2] = '|';	
+	}
+	char_separator<char> delim(something);
 	tokenizer< char_separator<char> > token(str, delim);
 	
 	for(tokenizer< char_separator<char> >::iterator i=token.begin(); i!=token.end(); ++i) {
@@ -219,13 +251,12 @@ vector<string> parsecommand(bool &end, string str) {
 		}
 		string tmp = *i;
 		vecstr.emplace_back(tmp);
-		cout << vecstr.at(cnt) << endl;
 		cnt++;
 	}
 	return vecstr;
 }
 
-queue<char> qconnect(string connect) {
+queue<char> strtoq(string connect) {
 	queue<char> out;
 	for(unsigned i=0; i<connect.size(); ++i) {
 		out.push(connect[i]);
@@ -285,3 +316,102 @@ bool iomode(string line) {
 	}
 }
 
+queue<string> findio(string str) {
+	queue<string> out;
+	int pipe = str.find("|"); 
+	int left = str.find("<"); 
+	int right = str.find(">");
+	
+	if(left==-1 && pipe==-1 && right==-1) {	//if all equal to -1, it means that 
+		queue<string> emptyq;
+		return emptyq;								//there are no more connectors
+	}
+
+	if(pipe==-1) {	//if there is no "|"
+		if(right==-1) {
+			out.push("<");
+			str.erase(left,1);		//CHANGE to support multiple > and <
+		}
+		else if(left==-1) {
+			out.push(">");
+			str.erase(right,1);
+		}
+		else if(left<right) {
+			out.push("<");
+			str.erase(left,1);
+		}
+		else {
+			out.push(">");
+			str.erase(right,1);
+		}
+	}
+	else if(right==-1) {	//if there is no ">"
+		if(pipe==-1) {
+			out.push("<");
+			str.erase(left,1);
+		}
+		else if(left==-1) {
+			out.push("|");
+			str.erase(pipe,1);
+		}
+		else if(left<pipe) {
+			out.push("<");
+			str.erase(left,1);
+		}
+		else {
+			out.push("|");
+			str.erase(pipe,1);
+		}
+	}
+	else if(left==-1) {	//if there is no "<"
+		if(pipe==-1) {
+			out.push(">");
+			str.erase(right,1);
+		}
+		else if(right==-1) {
+			out.push("|");
+			str.erase(pipe,1);
+		}
+		else if(pipe<right) {
+			out.push("|");
+			str.erase(pipe,1);
+		}
+		else {
+			out.push(">");
+			str.erase(right,1);
+		}
+	}
+	else if(left<pipe) { //checks which connector is the closest if all are inputted
+		if(left<pipe) {
+			if(left<right) {
+				out.push("<");
+				str.erase(left,1);
+			}
+			else {
+				out.push(">");
+				str.erase(right,1);
+			}
+		}
+	}
+	else if(pipe<right) {
+		out.push("|");
+		str.erase(pipe,1);
+	}
+	else {
+		out.push(">");
+		str.erase(right,1);
+	}
+	queue<string> next = findio(str);
+	while(!next.empty()) {
+		out.push(next.front());
+		next.pop();
+	}
+	return out;
+
+}
+
+bool runio(queue<string> &cmds, queue<char> &connect) {
+	int status = 0;
+	cout << "RAN" << endl;
+	return (status) ? false : true;
+}
