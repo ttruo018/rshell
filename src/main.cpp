@@ -54,8 +54,15 @@ int main(int argc, char** argv) {
 			cout << "io redirection mode" << endl;
 
 			iosym = findio(input);			
+			int iosymsize = iosym.size();
 			cmds = parseline(input, redirect);
-			end = runio(cmds, iosym);
+			int cmdsize = cmds.size();
+			if(iosymsize >= cmdsize) {
+				cout << "Error: Too many IO redirection symbols" << endl;
+			}
+			else {
+				end = runio(cmds, iosym);
+			}
 		}
 		else {
 			//PARSE BY '&', '|', AND ';' CHARACTERS
