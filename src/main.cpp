@@ -17,7 +17,7 @@ using namespace boost;
 
 bool runexec(vector<string> argv);	//will use system calls to run the commands provided and returns only 0 when sucessful
 
-bool runio(queue<string> &cmds, queue<char> &connect);
+bool runio(queue<string> &cmds, queue<string> &connect);
 
 string findconnect(string str);		//outputs a string of every connector
 
@@ -55,7 +55,7 @@ int main(int argc, char** argv) {
 
 			iosym = findio(input);			
 			cmds = parseline(input, redirect);
-
+			end = runio(cmds, iosym);
 		}
 		else {
 			//PARSE BY '&', '|', AND ';' CHARACTERS
@@ -64,16 +64,9 @@ int main(int argc, char** argv) {
 			connect = strtoq(constr);		//connect stores every connector
 			cmds = parseline(input, redirect);
 
-		}
-	
-		bool cmdend = false;		//tells if a command should end
-		bool cmdfail = false;		//tracks if a command has failed
-		while(!cmds.empty() && !cmdend && !end) {
-			if(redirect) {
-				cmdend = runio(cmds, connect);
-				
-			}
-			else {
+			bool cmdend = false;		//tells if a command should end
+			bool cmdfail = false;		//tracks if a command has failed
+			while(!cmds.empty() && !cmdend && !end) {
 				cmdend = false;
 				vector<string> cstr;
 				cstr = parsecommand(end, cmds.front());
@@ -88,9 +81,9 @@ int main(int argc, char** argv) {
 					if(next=='|' && cmdfail) {
 						cmdend = true;
 					}
-					cout << "DELETE" << cmds.front() << endl;
 				}
 			}
+		
 		}
 			
 	}
@@ -321,6 +314,7 @@ queue<string> findio(string str) {
 	int pipe = str.find("|"); 
 	int left = str.find("<"); 
 	int right = str.find(">");
+	int strsize = str.size();
 	
 	if(left==-1 && pipe==-1 && right==-1) {	//if all equal to -1, it means that 
 		queue<string> emptyq;
@@ -333,16 +327,28 @@ queue<string> findio(string str) {
 			str.erase(left,1);		//CHANGE to support multiple > and <
 		}
 		else if(left==-1) {
-			out.push(">");
-			str.erase(right,1);
+			if(right!=(strsize-1) && str.at(right+1)=='>') {
+				out.push(">>");
+				str.erase(right,2);
+			}	
+			else {
+				out.push(">");
+				str.erase(right,1);
+			}
 		}
 		else if(left<right) {
 			out.push("<");
 			str.erase(left,1);
 		}
 		else {
-			out.push(">");
-			str.erase(right,1);
+			if(right!=(strsize-1) && str.at(right+1)=='>') {
+				out.push(">>");
+				str.erase(right,2);
+			}
+			else {
+				out.push(">");
+				str.erase(right,1);
+			}
 		}
 	}
 	else if(right==-1) {	//if there is no ">"
@@ -365,8 +371,14 @@ queue<string> findio(string str) {
 	}
 	else if(left==-1) {	//if there is no "<"
 		if(pipe==-1) {
-			out.push(">");
-			str.erase(right,1);
+			if(right!=(strsize-1) && str.at(right+1)=='>') {
+				out.push(">>");
+				str.erase(right,2);
+			}
+			else {
+				out.push(">");
+				str.erase(right,1);
+			}
 		}
 		else if(right==-1) {
 			out.push("|");
@@ -377,8 +389,14 @@ queue<string> findio(string str) {
 			str.erase(pipe,1);
 		}
 		else {
-			out.push(">");
-			str.erase(right,1);
+			if(right!=(strsize-1) && str.at(right+1)=='>') {
+				out.push(">>");
+				str.erase(right,2);
+			}
+			else {
+				out.push(">");
+				str.erase(right,1);
+			}
 		}
 	}
 	else if(left<pipe) { //checks which connector is the closest if all are inputted
@@ -388,8 +406,14 @@ queue<string> findio(string str) {
 				str.erase(left,1);
 			}
 			else {
-				out.push(">");
-				str.erase(right,1);
+				if(right!=(strsize-1) && str.at(right+1)=='>') {
+					out.push(">>");
+					str.erase(right,2);
+				}
+				else {
+					out.push(">");
+					str.erase(right,1);
+				}
 			}
 		}
 	}
@@ -398,8 +422,14 @@ queue<string> findio(string str) {
 		str.erase(pipe,1);
 	}
 	else {
-		out.push(">");
-		str.erase(right,1);
+		if(right!=(strsize-1) && str.at(right+1)=='>') {
+			out.push(">>");
+			str.erase(right,2);
+		}
+		else {
+			out.push(">");
+			str.erase(right,1);
+		}
 	}
 	queue<string> next = findio(str);
 	while(!next.empty()) {
@@ -410,8 +440,44 @@ queue<string> findio(string str) {
 
 }
 
-bool runio(queue<string> &cmds, queue<char> &connect) {
-	int status = 0;
-	cout << "RAN" << endl;
-	return (status) ? false : true;
+bool runio(queue<string> &cmds, queue<string> &iosym) {
+	bool endprog = false;
+	bool endcmd = false;
+	
+	while(!iosym.empty() && !endcmd) {
+		if(iosym.front() == "<") {
+			cout << "iosym = < " << endl;		//DELETE
+			iosym.pop();
+			vector<string> cmd1 = parsecommand(endprog, cmds.front());
+			cmds.pop();
+			if(!endprog && cmds.empty()) {		//if nothing on the right side of <
+				cout << "Error : need a filename on the right of '<'" << endl;
+				endcmd = true;
+			}
+			else if(!endprog){
+				vector<string> cmd2 = parsecommand(endprog, cmds.front());
+				if(cmd2.empty()) {
+					cout << "Error : need a filename on the right of '<'" << endl;
+					endcmd = true;
+					cmds.pop();
+				}
+				else {
+					//DO NORMAL OPERATION HERE
+					cmds.pop();
+				}
+			}
+		}
+		else if(iosym.front() == ">" || iosym.front() == ">>") {
+			cout << "iosym = ";		//DELETE
+			(iosym.front()==">") ? cout << "> " : cout << ">>";	//DELETE
+			cout << endl;		//DELETE
+			iosym.pop();
+		}
+		else if(iosym.front() == "|") {
+			cout << "iosym = | " << endl;		//DELETE
+			iosym.pop();
+		}
+	}
+
+	return endprog;
 }
