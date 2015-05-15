@@ -8,9 +8,11 @@
 #include <iostream>
 #include <boost/tokenizer.hpp>
 #include <queue>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <string.h>
+#include <fcntl.h>
 
 using namespace std;
 using namespace boost;
@@ -450,41 +452,98 @@ queue<string> findio(string str) {
 bool runio(queue<string> &cmds, queue<string> &iosym) {
 	bool endprog = false;
 	bool endcmd = false;
+	bool leftio = false;
+	bool rightio = false;
+	bool rightio2 = false;
+	bool pipeio = false;
+	vector<string> infiles;
+	vector<string> outfiles;
 	
 	while(!iosym.empty() && !endcmd) {
-		if(iosym.front() == "<") {
-			cout << "iosym = < " << endl;		//DELETE
-			iosym.pop();
-			vector<string> cmd1 = parsecommand(endprog, cmds.front());
+		vector<string> cmd1 = parsecommand(endprog, cmds.front());
+		cmds.pop();
+		char** cmd = new char*[cmd1.size()+1];
+		for(unsigned int i=0; i<cmd1.size(); ++i) {
+			cmd[i] = const_cast<char* >((cmd1[i]).c_str());
+		}
+		cmd[cmd1.size()] = '\0';
+
+		while(!pipeio || !cmds.empty()) {
+			vector<string> nextfiles = parsecommand(endprog, cmds.front());
 			cmds.pop();
-			if(!endprog && cmds.empty()) {		//if nothing on the right side of <
-				cout << "Error : need a filename on the right of '<'" << endl;
-				endcmd = true;
+			cout << "iosym = " << iosym.front() << endl;	//DELETE
+			if(iosym.front() == "<") {
+				iosym.pop();
+				leftio = true;
+				infiles = nextfiles; 
 			}
-			else if(!endprog){
-				vector<string> cmd2 = parsecommand(endprog, cmds.front());
-				if(cmd2.empty()) {
-					cout << "Error : need a filename on the right of '<'" << endl;
-					endcmd = true;
-					cmds.pop();
+			else if(iosym.front() == ">" || iosym.front() == ">>") {
+				iosym.pop();
+				for(unsigned int i=0; i<nextfiles.size(); ++i) {
+					outfiles.emplace_back(nextfiles.at(i));
+				}
+				if(iosym.front()==">") {
+					rightio = true;
 				}
 				else {
-					//DO NORMAL OPERATION HERE
-					cmds.pop();
+					rightio2 = true;
+				}
+			}
+			else if(iosym.front() == "|") {
+				pipeio = true;
+				iosym.pop();
+			}
+		}
+		//WHERE WORK IS DONE
+		int pid = fork();
+		if(-1 == pid) {
+			perror("Error with fork().");
+			exit(1);
+		}
+		else if(0 == pid) {
+			if(leftio && -1 == close(0)) {
+				perror("Error with close(0).");
+				exit(1);
+			}
+			if(rightio && -1 == close(1)) {
+				perror("Error with close(1).");
+				exit(1);
+			}
+			//DO NORMAL < OPERATION HERE
+			for(unsigned int i=0; i<infiles.size(); ++i) {
+				int pidio = fork();
+				if(-1 == pidio) {
+					perror("Error with fork().");
+					exit(1);
+				}
+				const char* ifile = infiles.at(i).c_str();
+				const char* ofile = outfiles.at(i).c_str();
+
+				int fdi;
+				if(-1 == (fdi = open(ifile, O_RDONLY))) {
+					perror("Error with open().");
+					exit(1);
+				}
+				int fdo;		//DELETE
+				if(-1 == (fdo = open(ofile, O_WRONLY|O_CREAT))) {
+					perror("Error with open().");
+					exit(1);
+				}
+
+				if(-1 == execvp(cmd[0], cmd)) {
+					perror("Error with execvp().");
+					exit(1);
 				}
 			}
 		}
-		else if(iosym.front() == ">" || iosym.front() == ">>") {
-			cout << "iosym = ";		//DELETE
-			(iosym.front()==">") ? cout << "> " : cout << ">>";	//DELETE
-			cout << endl;		//DELETE
-			iosym.pop();
-		}
-		else if(iosym.front() == "|") {
-			cout << "iosym = | " << endl;		//DELETE
-			iosym.pop();
+		else if(0 < pid) {
+			//PARENT
+			if(-1 == wait(0)) {
+				perror("Error with wait().");
+				exit(1);
+			}
 		}
 	}
-
+		
 	return endprog;
 }
