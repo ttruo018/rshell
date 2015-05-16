@@ -452,14 +452,16 @@ queue<string> findio(string str) {
 bool runio(queue<string> &cmds, queue<string> &iosym) {
 	bool endprog = false;
 	bool endcmd = false;
-	bool leftio = false;
-	bool rightio = false;
-	bool rightio2 = false;
-	bool pipeio = false;
-	vector<string> infiles;
-	vector<string> outfiles;
-	
+			
 	while(!iosym.empty() && !endcmd) {
+		bool leftio = false;
+		bool rightio = false;
+		bool rightio2 = false;
+		bool pipeio = false;
+		string infiles;
+		string outfiles;
+		string outfiles2;
+
 		vector<string> cmd1 = parsecommand(endprog, cmds.front());
 		cmds.pop();
 		char** cmd = new char*[cmd1.size()+1];
@@ -468,82 +470,84 @@ bool runio(queue<string> &cmds, queue<string> &iosym) {
 		}
 		cmd[cmd1.size()] = '\0';
 
-		while(!pipeio || !cmds.empty()) {
+		while(!pipeio && !cmds.empty()) {
 			vector<string> nextfiles = parsecommand(endprog, cmds.front());
 			cmds.pop();
 			cout << "iosym = " << iosym.front() << endl;	//DELETE
 			if(iosym.front() == "<") {
 				iosym.pop();
 				leftio = true;
-				infiles = nextfiles; 
+				infiles = nextfiles.back(); 
+
 			}
 			else if(iosym.front() == ">" || iosym.front() == ">>") {
-				iosym.pop();
-				for(unsigned int i=0; i<nextfiles.size(); ++i) {
-					outfiles.emplace_back(nextfiles.at(i));
-				}
 				if(iosym.front()==">") {
 					rightio = true;
+					outfiles = nextfiles.back();
 				}
 				else {
 					rightio2 = true;
+					outfiles2 = nextfiles.back();
 				}
+				iosym.pop();
 			}
 			else if(iosym.front() == "|") {
 				pipeio = true;
 				iosym.pop();
 			}
 		}
+			cout << "HERE" << endl;
 		//WHERE WORK IS DONE
-		int pid = fork();
-		if(-1 == pid) {
-			perror("Error with fork().");
-			exit(1);
-		}
-		else if(0 == pid) {
-			if(leftio && -1 == close(0)) {
-				perror("Error with close(0).");
+		//for(unsigned int i=0; i<infiles.size(); ++i) {
+			int pidio = fork();
+
+			if(-1 == pidio) {
+				perror("Error with fork().");
 				exit(1);
 			}
-			if(rightio && -1 == close(1)) {
-				perror("Error with close(1).");
-				exit(1);
-			}
-			//DO NORMAL < OPERATION HERE
-			for(unsigned int i=0; i<infiles.size(); ++i) {
-				int pidio = fork();
-				if(-1 == pidio) {
-					perror("Error with fork().");
+			if(0 == pidio) {		//Child
+				if(leftio && -1 == close(0)) {
+					perror("Error with close(0).");
 					exit(1);
 				}
-				const char* ifile = infiles.at(i).c_str();
-				const char* ofile = outfiles.at(i).c_str();
-
+				if((rightio || rightio2) && -1 == close(1)) {
+					perror("Error with close(1).");
+					exit(1);
+				}
+				const char* ifile = infiles.c_str();
+				const char* ofile = outfiles.c_str();
+				int flag1 = O_WRONLY|O_CREAT|O_TRUNC;
+				const char* ofile2 = outfiles2.c_str();
+				int flag2 = O_WRONLY|O_CREAT|O_APPEND;
+				int perm = S_IRUSR|S_IWUSR;
 				int fdi;
-				if(-1 == (fdi = open(ifile, O_RDONLY))) {
-					perror("Error with open().");
+				if(leftio && -1 == (fdi = open(ifile, O_RDONLY))) {
+					perror("Error with open(). (<)");
 					exit(1);
 				}
-				int fdo;		//DELETE
-				if(-1 == (fdo = open(ofile, O_WRONLY|O_CREAT))) {
-					perror("Error with open().");
+				int fdo;
+				if(rightio && -1 == (fdo = open(ofile, flag1, perm))) {
+					perror("Error with open(). (>)");
 					exit(1);
 				}
-
+				if(rightio2 && -1 == (fdo = open(ofile2, flag2, perm))) {
+					perror("Error with open(). (>>)");
+					exit(1);
+				}
 				if(-1 == execvp(cmd[0], cmd)) {
 					perror("Error with execvp().");
 					exit(1);
 				}
 			}
-		}
-		else if(0 < pid) {
-			//PARENT
-			if(-1 == wait(0)) {
-				perror("Error with wait().");
-				exit(1);
+	
+			else if(0 < pidio) {		//Parent
+				if(-1 == wait(0)) {
+					perror("Error with wait().");
+					exit(1);
+				}
 			}
-		}
+		//}
+		//delete[] cmd;
 	}
-		
 	return endprog;
 }
