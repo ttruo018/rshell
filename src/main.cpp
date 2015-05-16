@@ -452,6 +452,11 @@ queue<string> findio(string str) {
 bool runio(queue<string> &cmds, queue<string> &iosym) {
 	bool endprog = false;
 	bool endcmd = false;
+	const int PIPE_READ = 0;
+	const int PIPE_WRITE = 1;
+	vector<int[2] > pipelist;
+	int pipecnt = 0;
+	bool completepipe = false;
 			
 	while(!iosym.empty() && !endcmd) {
 		bool leftio = false;
@@ -493,6 +498,10 @@ bool runio(queue<string> &cmds, queue<string> &iosym) {
 			}
 			else if(iosym.front() == "|") {
 				pipeio = true;
+				if(-1 == pipe(pipelist.at(pipecnt))) {
+					perror("There was an error with pipe().");
+					exit(1);
+				}
 				iosym.pop();
 			}
 		}
@@ -534,6 +543,15 @@ bool runio(queue<string> &cmds, queue<string> &iosym) {
 					perror("Error with open(). (>>)");
 					exit(1);
 				}
+				if(pipeio) {
+					if(-1 == dup2(SOMETHING, 1)) {
+						perror("Error with dup2(). ");
+						exit(1);
+					}
+				}
+				if(completepipe) {
+
+				}
 				if(-1 == execvp(cmd[0], cmd)) {
 					perror("Error with execvp().");
 					exit(1);
@@ -541,9 +559,13 @@ bool runio(queue<string> &cmds, queue<string> &iosym) {
 			}
 	
 			else if(0 < pidio) {		//Parent
-				if(-1 == wait(0)) {
+				if(!pipeio && -1 == wait(0)) {
 					perror("Error with wait().");
 					exit(1);
+				}
+				else if(pipeio){
+					pipecnt++;
+					completepipe = true;
 				}
 			}
 		//}
