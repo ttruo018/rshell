@@ -498,6 +498,8 @@ bool runio(queue<string> &cmds, queue<string> &iosym) {
 			}
 			else if(iosym.front() == "|") {
 				pipeio = true;
+				int pipefd[2];
+				pipelist.push_back(pipefd);
 				if(-1 == pipe(pipelist.at(pipecnt))) {
 					perror("There was an error with pipe().");
 					exit(1);
@@ -544,13 +546,18 @@ bool runio(queue<string> &cmds, queue<string> &iosym) {
 					exit(1);
 				}
 				if(pipeio) {
-					if(-1 == dup2(SOMETHING, 1)) {
+					if(-1 == dup2(pipelist.at(pipecnt)[PIPE_WRITE], 1)) {
 						perror("Error with dup2(). ");
 						exit(1);
 					}
+					pipeio = false;
 				}
 				if(completepipe) {
-
+					if(-1 == dup2(pipelist.at(pipecnt-1)[PIPE_READ], 0)) {
+						perror("Error with dup2().");
+						exit(1);
+					}
+					completepipe = false;
 				}
 				if(-1 == execvp(cmd[0], cmd)) {
 					perror("Error with execvp().");
@@ -566,6 +573,22 @@ bool runio(queue<string> &cmds, queue<string> &iosym) {
 				else if(pipeio){
 					pipecnt++;
 					completepipe = true;
+				}
+			}
+			for(int i=0; i<pipecnt; ++i) {
+				if(-1 == close(pipelist.at(i)[PIPE_WRITE])) {
+					perror("Error with close().");
+					exit(1);
+				}
+				if(-1 == close(pipelist.at(i)[PIPE_READ])) {
+					perror("Error wtih close.");
+					exit(1);
+				}
+			}
+			for(int i=0; i<(pipecnt+1); ++i) {
+				if(-1 == wait(0)) {
+					perror("Error with wait().");
+					exit(1);
 				}
 			}
 		//}
