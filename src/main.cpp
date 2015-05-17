@@ -449,16 +449,19 @@ queue<string> findio(string str) {
 
 }
 
+struct piping {
+	int fd[2];
+};
 bool runio(queue<string> &cmds, queue<string> &iosym) {
 	bool endprog = false;
 	bool endcmd = false;
 	const int PIPE_READ = 0;
 	const int PIPE_WRITE = 1;
-	vector<int[2] > pipelist;
+	vector<piping> pipelist;
 	int pipecnt = 0;
 	bool completepipe = false;
 			
-	while(!iosym.empty() && !endcmd) {
+	while(!cmds.empty() && !endcmd) {
 		bool leftio = false;
 		bool rightio = false;
 		bool rightio2 = false;
@@ -475,12 +478,56 @@ bool runio(queue<string> &cmds, queue<string> &iosym) {
 		}
 		cmd[cmd1.size()] = '\0';
 
+		if(completepipe && cmds.empty()) {
+			int pid = fork();
+			completepipe = false;
+			if(-1 == pid) {
+				perror("Error with fork().");
+				exit(1);
+			}
+			else if(0 == pid) {
+				if(-1 == dup2(pipelist.at(pipecnt-1).fd[PIPE_READ], 0)) {
+					perror("Error with dup2().");
+					exit(1);
+				}
+				cerr << "RAN : " << __LINE__ << endl;
+				if(-1 == execvp(cmd[0], cmd)) {
+					perror("Error with execvp.");
+					exit(1);
+				}
+			}
+			else if(0 < pid) {
+				cerr << "ENDING COMMAND" << endl;
+				for(int i=0; i<pipecnt; ++i) {
+					if(-1 == close(pipelist.at(i).fd[PIPE_WRITE])) {
+						perror("Error with close().");
+						exit(1);
+					}
+					if(-1 == close(pipelist.at(i).fd[PIPE_READ])) {
+						perror("Error wtih close.");
+						exit(1);
+					}
+				}	
+				int status;
+				for(int i=0; i<pipecnt+1; ++i) {
+					cerr << "BEFORE WAIT" << endl;
+					if(-1 == wait(&status)) {
+						perror("Error with wait().");
+						exit(1);
+					}
+					cerr << "AFTER WAIT" << endl;
+				}
+				pipecnt = 0;
+			}
+		}
+		else {
+
 		while(!pipeio && !cmds.empty()) {
 			vector<string> nextfiles = parsecommand(endprog, cmds.front());
-			cmds.pop();
 			cout << "iosym = " << iosym.front() << endl;	//DELETE
 			if(iosym.front() == "<") {
 				iosym.pop();
+				cmds.pop();
 				leftio = true;
 				infiles = nextfiles.back(); 
 
@@ -495,104 +542,98 @@ bool runio(queue<string> &cmds, queue<string> &iosym) {
 					outfiles2 = nextfiles.back();
 				}
 				iosym.pop();
+				cmds.pop();
 			}
 			else if(iosym.front() == "|") {
 				pipeio = true;
-				int pipefd[2];
-				pipelist.push_back(pipefd);
-				if(-1 == pipe(pipelist.at(pipecnt))) {
+				piping fd;
+				pipelist.push_back(fd);
+				if(-1 == pipe(pipelist.at(pipecnt).fd)) {
 					perror("There was an error with pipe().");
 					exit(1);
 				}
 				iosym.pop();
 			}
 		}
-			cout << "HERE" << endl;
+		cout << "HERE" << endl;
 		//WHERE WORK IS DONE
-		//for(unsigned int i=0; i<infiles.size(); ++i) {
-			int pidio = fork();
+		//for(unsigned int i=0; i<infiles.size(); ++i) 
+		int pidio = fork();
 
-			if(-1 == pidio) {
-				perror("Error with fork().");
+		if(-1 == pidio) {
+			perror("Error with fork().");
+			exit(1);
+		}
+		if(0 == pidio) {		//Child
+			if(leftio && -1 == close(0)) {
+				perror("Error with close(0).");
 				exit(1);
 			}
-			if(0 == pidio) {		//Child
-				if(leftio && -1 == close(0)) {
-					perror("Error with close(0).");
-					exit(1);
-				}
-				if((rightio || rightio2) && -1 == close(1)) {
-					perror("Error with close(1).");
-					exit(1);
-				}
-				const char* ifile = infiles.c_str();
-				const char* ofile = outfiles.c_str();
-				int flag1 = O_WRONLY|O_CREAT|O_TRUNC;
-				const char* ofile2 = outfiles2.c_str();
-				int flag2 = O_WRONLY|O_CREAT|O_APPEND;
-				int perm = S_IRUSR|S_IWUSR;
-				int fdi;
-				if(leftio && -1 == (fdi = open(ifile, O_RDONLY))) {
-					perror("Error with open(). (<)");
-					exit(1);
-				}
-				int fdo;
-				if(rightio && -1 == (fdo = open(ofile, flag1, perm))) {
-					perror("Error with open(). (>)");
-					exit(1);
-				}
-				if(rightio2 && -1 == (fdo = open(ofile2, flag2, perm))) {
-					perror("Error with open(). (>>)");
-					exit(1);
-				}
-				if(pipeio) {
-					if(-1 == dup2(pipelist.at(pipecnt)[PIPE_WRITE], 1)) {
-						perror("Error with dup2(). ");
-						exit(1);
-					}
-					pipeio = false;
-				}
-				if(completepipe) {
-					if(-1 == dup2(pipelist.at(pipecnt-1)[PIPE_READ], 0)) {
-						perror("Error with dup2().");
-						exit(1);
-					}
-					completepipe = false;
-				}
-				if(-1 == execvp(cmd[0], cmd)) {
-					perror("Error with execvp().");
-					exit(1);
-				}
+			if((rightio || rightio2) && -1 == close(1)) {
+				perror("Error with close(1).");
+				exit(1);
 			}
-	
-			else if(0 < pidio) {		//Parent
-				if(!pipeio && -1 == wait(0)) {
-					perror("Error with wait().");
-					exit(1);
-				}
-				else if(pipeio){
-					pipecnt++;
-					completepipe = true;
-				}
+			const char* ifile = infiles.c_str();
+			const char* ofile = outfiles.c_str();
+			int flag1 = O_WRONLY|O_CREAT|O_TRUNC;
+			const char* ofile2 = outfiles2.c_str();
+			int flag2 = O_WRONLY|O_CREAT|O_APPEND;
+			int perm = S_IRUSR|S_IWUSR;
+			int fdi;
+			if(leftio && -1 == (fdi = open(ifile, O_RDONLY))) {
+				perror("Error with open(). (<)");
+				exit(1);
 			}
-			for(int i=0; i<pipecnt; ++i) {
-				if(-1 == close(pipelist.at(i)[PIPE_WRITE])) {
-					perror("Error with close().");
-					exit(1);
-				}
-				if(-1 == close(pipelist.at(i)[PIPE_READ])) {
-					perror("Error wtih close.");
-					exit(1);
-				}
+			int fdo;
+			if(rightio && -1 == (fdo = open(ofile, flag1, perm))) {
+				perror("Error with open(). (>)");
+				exit(1);
 			}
-			for(int i=0; i<(pipecnt+1); ++i) {
-				if(-1 == wait(0)) {
-					perror("Error with wait().");
+			if(rightio2 && -1 == (fdo = open(ofile2, flag2, perm))) {
+				perror("Error with open(). (>>)");
+				exit(1);
+			}
+			if(pipeio) {
+				if(-1 == dup2(pipelist.at(pipecnt).fd[PIPE_WRITE], 1)) {
+					perror("Error with dup2(). ");
 					exit(1);
 				}
+				pipeio = false;
 			}
-		//}
-		//delete[] cmd;
+			if(completepipe) {
+				if(-1 == dup2(pipelist.at(pipecnt-1).fd[PIPE_READ], 0)) {
+					perror("Error with dup2().");
+					exit(1);
+				}
+				completepipe = false;
+			}
+			cerr << "RAN : " <<  __LINE__<<  cmd[0] << endl;
+			if(-1 == execvp(cmd[0], cmd)) {
+				perror("Error with execvp().");
+				exit(1);
+			}
+		}
+
+		else if(0 < pidio) {		//Parent
+			if(!pipeio && -1 == wait(0)) {
+				perror("Error with wait().");
+				exit(1);
+			}
+			else if(pipeio){
+				pipecnt++;
+				completepipe = true;
+			}
+			else if(!pipeio && completepipe) {
+				//COMPLETE PIPE
+				cerr << "LAST PIPE" << endl;
+			}
+		}
+
+		}
 	}
+	
+
+	
+		
 	return endprog;
 }
