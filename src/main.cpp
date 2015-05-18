@@ -579,7 +579,7 @@ bool runio(queue<string> &cmds, queue<string> &iosym) {
 				infiles = nextfiles.back(); 
 
 			}
-			if(iosym.front() == "<<<") {
+			else if(iosym.front() == "<<<") {
 				iosym.pop();
 				leftio3 = true;
 				int findstrerr = findstr(cmds.front(), instr);
