@@ -73,8 +73,8 @@ int main(int argc, char** argv) {
 				else {
 					struct stat fd;
 					if(-1 == (stat(dirfiles[i], &fd))) {
-						cout << "Error with stat() called on " << dirfiles[i]
-							<< endl;
+						perror("Error with stat() called on ");
+						exit(1);
 					}
 					else if(S_ISDIR(fd.st_mode)) {
 						if(!(flags & 04) && dirfiles.size() > 1) {
@@ -230,7 +230,8 @@ void opendirfile(char* dirfile, int flags) {
 		for(unsigned int i=0; i<list.size(); ++i) {
 			struct stat fd;
 			if(-1 == (stat(list[i].c_str(),&fd))) {
-				cout << "Error with calling stat on " << list[i] << endl;
+				perror("Error with calling stat on ");
+				exit(1);
 			}
 			else {
 				blksize += fd.st_blocks;
@@ -297,8 +298,8 @@ void opendirfile(char* dirfile, int flags) {
 			if(list[i]!="." && list[i]!="..") {
 				struct stat fd;
 				if(-1 == (stat(list[i].c_str(), &fd))) {
-					cout << "Error on stat calling " << list[i]
-						<< endl;
+					perror("Error on stat calling ");
+					exit(1);
 				}
 				else if(S_ISDIR(fd.st_mode)) {
 					cout << endl;
@@ -343,7 +344,8 @@ void loutput(char* file, vector<string> &perm, vector<string> &link,
 				vector<string> &date,	vector<string> &fname) {
 	struct stat fd;
 	if(-1 == (lstat(file, &fd))) {
-		cout << "Error with lstat calling " << file << endl;
+		perror("Error with lstat calling ");
+		exit(1);
 	}
 	if(S_ISLNK(fd.st_mode)) {
 		perm.push_back("l");
@@ -377,13 +379,13 @@ void loutput(char* file, vector<string> &perm, vector<string> &link,
 	link.push_back(numlink);
 	struct passwd *usr;
 	if(0 == (usr = getpwuid(fd.st_uid))) {
-		cout << "Error with getpwuid()." << endl;
+		perror("Error with getpwuid().");
 		exit(1);
 	}
 	usrid.push_back(usr->pw_name);
 	struct group *grp;
 	if(0 == (grp = getgrgid(fd.st_gid))) {
-		cout << "Error with getgrgid()." << endl;
+		perror("Error with getgrgid().");
 		exit(1);
 	}
 	grpid.push_back(grp->gr_name);
@@ -423,7 +425,8 @@ unsigned int largvecelem(vector<string> v) {
 void colorout(string dir, string str, int width) {
 	struct stat file;
 	if(-1 == (stat(str.c_str(), &file))) {
-		cout << "Error cwith stat calling " << str << endl;
+		perror("Error cwith stat calling ");
+		exit(1);
 	}
 	if(S_ISREG(file.st_mode) && (file.st_mode & (S_IXUSR|S_IXGRP|S_IXOTH))) {
 			cout << "\033[32m";
