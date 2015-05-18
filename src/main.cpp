@@ -41,6 +41,8 @@ int main(int argc, char** argv) {
 	string input;
 	bool end = false;
 	while(!end) {
+		fflush(stdout);
+		while(!waitpid(-1, NULL , WNOHANG)) {}
 		printinfo();
 		cout << "$ ";
 		getline(cin, input);
@@ -53,8 +55,6 @@ int main(int argc, char** argv) {
 		bool redirect = iomode(input);
 		if(redirect) {
 			//PARSE BY '>', '<', AND '|' CHARACTERS
-			cout << "io redirection mode" << endl;
-
 			iosym = findio(input);			
 			int iosymsize = iosym.size();
 			cmds = parseline(input, redirect);
@@ -68,7 +68,6 @@ int main(int argc, char** argv) {
 		}
 		else {
 			//PARSE BY '&', '|', AND ';' CHARACTERS
-			cout << "connector mode" << endl;
 			constr = findconnect(input);			
 			connect = strtoq(constr);		//connect stores every connector
 			cmds = parseline(input, redirect);
@@ -332,11 +331,17 @@ queue<string> findio(string str) {
 
 	if(pipe==-1) {	//if there is no "|"
 		if(right==-1) {
-			out.push("<");
-			str.erase(left,1);		//CHANGE to support multiple > and <
+			if(left<(strsize-2) && str.substr(left,3)=="<<<") {
+				out.push("<<<");
+				str.erase(left,3);
+			}
+			else {
+				out.push("<");
+				str.erase(left,1);
+			}
 		}
 		else if(left==-1) {
-			if(right!=(strsize-1) && str.at(right+1)=='>') {
+			if(right<(strsize-1) && str.at(right+1)=='>') {
 				out.push(">>");
 				str.erase(right,2);
 			}	
@@ -346,8 +351,14 @@ queue<string> findio(string str) {
 			}
 		}
 		else if(left<right) {
-			out.push("<");
-			str.erase(left,1);
+			if(left<(strsize-2) && str.substr(left,3)=="<<<") {
+				out.push("<<<");
+				str.erase(left,3);
+			}
+			else {
+				out.push("<");
+				str.erase(left,1);
+			}
 		}
 		else {
 			if(right!=(strsize-1) && str.at(right+1)=='>') {
@@ -362,16 +373,28 @@ queue<string> findio(string str) {
 	}
 	else if(right==-1) {	//if there is no ">"
 		if(pipe==-1) {
-			out.push("<");
-			str.erase(left,1);
+			if(left<(strsize-2) && str.substr(left,3)=="<<<") {
+				out.push("<<<");
+				str.erase(left,3);
+			}
+			else {
+				out.push("<");
+				str.erase(left,1);
+			}
 		}
 		else if(left==-1) {
 			out.push("|");
 			str.erase(pipe,1);
 		}
 		else if(left<pipe) {
-			out.push("<");
-			str.erase(left,1);
+			if(left<(strsize-2) && str.substr(left,3)=="<<<") {
+				out.push("<<<");
+				str.erase(left,3);
+			}
+			else {
+				out.push("<");
+				str.erase(left,1);
+			}
 		}
 		else {
 			out.push("|");
@@ -411,8 +434,14 @@ queue<string> findio(string str) {
 	else if(left<pipe) { //checks which connector is the closest if all are inputted
 		if(left<pipe) {
 			if(left<right) {
-				out.push("<");
-				str.erase(left,1);
+				if(left<(strsize-2) && str.substr(left,3)=="<<<") {
+					out.push("<<<");
+					str.erase(left,3);
+				}
+				else {
+					out.push("<");
+					str.erase(left,1);
+				}
 			}
 			else {
 				if(right!=(strsize-1) && str.at(right+1)=='>') {
@@ -449,6 +478,7 @@ queue<string> findio(string str) {
 
 }
 
+int findstr(string param, string &newstr);
 struct piping {
 	int fd[2];
 };
@@ -457,22 +487,38 @@ bool runio(queue<string> &cmds, queue<string> &iosym) {
 	bool endcmd = false;
 	const int PIPE_READ = 0;
 	const int PIPE_WRITE = 1;
+	vector<int> pids;
 	vector<piping> pipelist;
 	int pipecnt = 0;
+	int forkcnt = 0;
 	bool completepipe = false;
+	int stdin_cp;
+	if(-1 == (stdin_cp = dup(0))) {
+		perror("Error with dup().");
+		exit(1);
+	}
+	int stdout_cp;
+	if(-1 == (stdout_cp = dup(1))) {
+		perror("Error with dup().");
+		exit(1);
+	}
 			
 	while(!cmds.empty() && !endcmd) {
 		bool leftio = false;
+		bool leftio3 = false;
 		bool rightio = false;
 		bool rightio2 = false;
 		bool pipeio = false;
 		string infiles;
+		string instr;
+		char tmpfile[10] = {'X','X','X','X','X','X', 0};
+		int tmpfd;
 		string outfiles;
 		string outfiles2;
 
 		vector<string> cmd1 = parsecommand(endprog, cmds.front());
 		cmds.pop();
-		char** cmd = new char*[cmd1.size()+1];
+		char** cmd = new char*[BUFSIZ];
 		for(unsigned int i=0; i<cmd1.size(); ++i) {
 			cmd[i] = const_cast<char* >((cmd1[i]).c_str());
 		}
@@ -490,47 +536,81 @@ bool runio(queue<string> &cmds, queue<string> &iosym) {
 					perror("Error with dup2().");
 					exit(1);
 				}
-				cerr << "RAN : " << __LINE__ << endl;
 				if(-1 == execvp(cmd[0], cmd)) {
 					perror("Error with execvp.");
 					exit(1);
 				}
 			}
 			else if(0 < pid) {
-				cerr << "ENDING COMMAND" << endl;
-				for(int i=0; i<pipecnt; ++i) {
-					if(-1 == close(pipelist.at(i).fd[PIPE_WRITE])) {
-						perror("Error with close().");
-						exit(1);
-					}
-					if(-1 == close(pipelist.at(i).fd[PIPE_READ])) {
-						perror("Error wtih close.");
-						exit(1);
-					}
-				}	
+				forkcnt++;
+				pids.emplace_back(pid);
+				if(-1 == close(pipelist.back().fd[PIPE_READ])) {
+					perror("Error with close.");
+					exit(1);
+				}
+
 				int status;
-				for(int i=0; i<pipecnt+1; ++i) {
-					cerr << "BEFORE WAIT" << endl;
-					if(-1 == wait(&status)) {
+				for(unsigned int i=0; i<pids.size(); ++i) {
+					if(-1 == waitpid(pids.at(i),&status,WNOHANG)) {
 						perror("Error with wait().");
 						exit(1);
 					}
-					cerr << "AFTER WAIT" << endl;
+				}
+				
+				if(-1 == dup2(stdin_cp, 0)) {
+					perror("Error with dup2().");
+					exit(1);
+				}
+				if(-1 == dup2(stdout_cp, 1)) {
+					perror("Error with dup2().");
+					exit(1);
 				}
 				pipecnt = 0;
 			}
 		}
 		else {
 
-		while(!pipeio && !cmds.empty()) {
+		while(!endcmd && !pipeio && !cmds.empty()) {
 			vector<string> nextfiles = parsecommand(endprog, cmds.front());
-			cout << "iosym = " << iosym.front() << endl;	//DELETE
 			if(iosym.front() == "<") {
 				iosym.pop();
 				cmds.pop();
 				leftio = true;
 				infiles = nextfiles.back(); 
 
+			}
+			if(iosym.front() == "<<<") {
+				iosym.pop();
+				leftio3 = true;
+				int findstrerr = findstr(cmds.front(), instr);
+				if(-1 == findstrerr) {
+					cerr << "No string entered." << endl;
+					endcmd = true;
+				}
+				else if(1 == findstrerr) {
+					cerr << "No ending quotation." << endl;
+					endcmd = true;
+				}
+				else if(0 == findstrerr) {
+					char* istr = const_cast<char* >(instr.c_str());
+					char ibuf[BUFSIZ] = {0};
+					strcpy(ibuf, istr);
+					if(-1 == (tmpfd = mkstemp(tmpfile))) {
+						perror("Error with mkstemp().");
+						exit(1);
+					}
+					if(-1 == write(tmpfd, ibuf, BUFSIZ)) {
+						perror("Error with write(). (<<<)");
+						exit(1);
+					}
+					if(-1 == close(tmpfd)) {
+						perror("Error with close().");
+						exit(1);
+					}
+					cmd[cmd1.size()] = tmpfile;
+				}
+
+				cmds.pop();
 			}
 			else if(iosym.front() == ">" || iosym.front() == ">>") {
 				if(iosym.front()==">") {
@@ -555,9 +635,8 @@ bool runio(queue<string> &cmds, queue<string> &iosym) {
 				iosym.pop();
 			}
 		}
-		cout << "HERE" << endl;
 		//WHERE WORK IS DONE
-		//for(unsigned int i=0; i<infiles.size(); ++i) 
+		if(!endcmd) {
 		int pidio = fork();
 
 		if(-1 == pidio) {
@@ -605,9 +684,7 @@ bool runio(queue<string> &cmds, queue<string> &iosym) {
 					perror("Error with dup2().");
 					exit(1);
 				}
-				completepipe = false;
 			}
-			cerr << "RAN : " <<  __LINE__<<  cmd[0] << endl;
 			if(-1 == execvp(cmd[0], cmd)) {
 				perror("Error with execvp().");
 				exit(1);
@@ -615,25 +692,57 @@ bool runio(queue<string> &cmds, queue<string> &iosym) {
 		}
 
 		else if(0 < pidio) {		//Parent
-			if(!pipeio && -1 == wait(0)) {
+			if(!pipeio && -1 == waitpid(-1, 0, 0)) {
 				perror("Error with wait().");
 				exit(1);
 			}
-			else if(pipeio){
+			if(leftio3) {
+				if(0 != remove(tmpfile)) {
+					perror("Error with remove.");
+					exit(1);
+				}
+			}
+			if(completepipe) {		//Closes pipe
+				if(-1 == close(pipelist.at(pipecnt-1).fd[PIPE_READ])) {
+					perror("Error with close.");
+					exit(1);
+				}
+				completepipe = false;
+			}
+			if(pipeio){
+				if(-1 == close(pipelist.at(pipecnt).fd[PIPE_WRITE])) {
+					perror("Error with close().");
+					exit(1);
+				}
+
+				pids.emplace_back(pidio);
 				pipecnt++;
+				forkcnt++;
 				completepipe = true;
 			}
-			else if(!pipeio && completepipe) {
-				//COMPLETE PIPE
-				cerr << "LAST PIPE" << endl;
-			}
+		}
 		}
 
 		}
 	}
-	
-
-	
 		
 	return endprog;
+}
+
+int findstr(string param, string &newstr) {
+	string out = param;
+	int first = out.find("\"");
+	if(-1 == first) {
+		newstr = out;
+		return -1;
+	}
+	int second = out.find("\"", first+1);
+	if(-1 == second) {
+		newstr = out;
+		return 1;
+	}
+	else {
+		newstr = out.substr(first+1, second-first-1) + "\n";
+		return 0;
+	}
 }
