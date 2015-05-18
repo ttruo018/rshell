@@ -20,21 +20,21 @@ is inputted as a connector. It is currently being treated the same as a `;` conn
 The shell can redirect files or a string as inputs 
 with `<` and `<<<`, redirect output to files 
 with `>` and `>>`, and pipe commands together with `|`. 
-With the `<` symbol, you can redirect a file as input to 
+* With the `<` symbol, you can redirect a file as input to 
 a command. If more than one file is provided, only the very 
 last file given will be used as input.    
-With the `<<<` symbol, you can redirect a string as 
+* With the `<<<` symbol, you can redirect a string as 
 the input to a command. The string must be enclosed within double quotation marks (ie `This is a string`), otherwise an
 error message will be shown.       
-With the `>` symbol, you can redirect the command's output 
+* With the `>` symbol, you can redirect the command's output 
 into a file, creating the file if it doesn't already exist. 
 If the file already exists, then the file's contents will be 
 erased and the command's output will replace it.
-With the `>>` symbol, you can also redirect a command's output 
-into a file. However if the file exists, the command's output 
-will be appended onto the existing file, rather than deleting
-its contents.   
-With the `|` symbol, the output of the file on the left of 
+* With the `>>` symbol, you can also redirect a command's 
+output into a file. However if the file exists, the 
+command's output will be appended onto the existing file, 
+rather than deleting its contents.   
+* With the `|` symbol, the output of the file on the left of 
 this symbol will be the input of the command on the right.   
 
 ###Exit command
@@ -81,7 +81,7 @@ output. Just press the ENTER key to get the prompt back.
 * The `<<<` operator seems to not work in scripts.   
 * When combining connectors and I/O redirection(or piping), 
 there may be undefined behavior.   
-* Can only redirect each input and output to one file.   
+* Can only redirect each input and output to one file.
 ###ls
 * running `-l` and `-R` in any combination on a folder 
 containing many directories may cause errors with 
