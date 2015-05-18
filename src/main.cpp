@@ -42,7 +42,6 @@ int main(int argc, char** argv) {
 	bool end = false;
 	while(!end) {
 		fflush(stdout);
-		while(!waitpid(-1, NULL , WNOHANG)) {}
 		printinfo();
 		cout << "$ ";
 		getline(cin, input);
@@ -276,11 +275,12 @@ string checkcomment(string str) {
 }
 
 void printinfo() {
-	if(getlogin()==NULL) {
+	char* usr;
+	if((usr=getlogin())==NULL) {
 		perror("Could not find username. ");
 	}
 	else {
-		cout << getlogin();
+		cout << usr;
 	}
 	int len = 64;
 	char* machine = new char[len];
@@ -297,15 +297,15 @@ void printinfo() {
 bool iomode(string line) {
 	int outdirect = line.find('>');
 	int indirect = line.find('<');
-	int pipe = line.find('|');
+	int pipe1 = line.find('|');
 	int andconnect = line.find('&');
 	int semiconnect = line.find(';');
 	if(-1!=outdirect || -1!=indirect) {
 		return true;
 	}
-	else if(-1!=pipe && (-1==andconnect || -1==semiconnect)) {
-		int secondpipe = line.find('|', pipe+1);
-		if(secondpipe==(pipe+1)) {
+	else if(-1!=pipe1 && (-1==andconnect || -1==semiconnect)) {
+		int secondpipe = line.find('|', pipe1+1);
+		if(secondpipe==(pipe1+1)) {
 			return false;
 		}
 		else {
@@ -319,17 +319,17 @@ bool iomode(string line) {
 
 queue<string> findio(string str) {
 	queue<string> out;
-	int pipe = str.find("|"); 
+	int pipe1 = str.find("|"); 
 	int left = str.find("<"); 
 	int right = str.find(">");
 	int strsize = str.size();
 	
-	if(left==-1 && pipe==-1 && right==-1) {	//if all equal to -1, it means that 
+	if(left==-1 && pipe1==-1 && right==-1) {	//if all equal to -1, it means that 
 		queue<string> emptyq;
 		return emptyq;								//there are no more connectors
 	}
 
-	if(pipe==-1) {	//if there is no "|"
+	if(pipe1==-1) {	//if there is no "|"
 		if(right==-1) {
 			if(left<(strsize-2) && str.substr(left,3)=="<<<") {
 				out.push("<<<");
@@ -372,7 +372,7 @@ queue<string> findio(string str) {
 		}
 	}
 	else if(right==-1) {	//if there is no ">"
-		if(pipe==-1) {
+		if(pipe1==-1) {
 			if(left<(strsize-2) && str.substr(left,3)=="<<<") {
 				out.push("<<<");
 				str.erase(left,3);
@@ -384,9 +384,9 @@ queue<string> findio(string str) {
 		}
 		else if(left==-1) {
 			out.push("|");
-			str.erase(pipe,1);
+			str.erase(pipe1,1);
 		}
-		else if(left<pipe) {
+		else if(left<pipe1) {
 			if(left<(strsize-2) && str.substr(left,3)=="<<<") {
 				out.push("<<<");
 				str.erase(left,3);
@@ -398,11 +398,11 @@ queue<string> findio(string str) {
 		}
 		else {
 			out.push("|");
-			str.erase(pipe,1);
+			str.erase(pipe1,1);
 		}
 	}
 	else if(left==-1) {	//if there is no "<"
-		if(pipe==-1) {
+		if(pipe1==-1) {
 			if(right!=(strsize-1) && str.at(right+1)=='>') {
 				out.push(">>");
 				str.erase(right,2);
@@ -414,11 +414,11 @@ queue<string> findio(string str) {
 		}
 		else if(right==-1) {
 			out.push("|");
-			str.erase(pipe,1);
+			str.erase(pipe1,1);
 		}
-		else if(pipe<right) {
+		else if(pipe1<right) {
 			out.push("|");
-			str.erase(pipe,1);
+			str.erase(pipe1,1);
 		}
 		else {
 			if(right!=(strsize-1) && str.at(right+1)=='>') {
@@ -431,8 +431,8 @@ queue<string> findio(string str) {
 			}
 		}
 	}
-	else if(left<pipe) { //checks which connector is the closest if all are inputted
-		if(left<pipe) {
+	else if(left<pipe1) { //checks which connector is the closest if all are inputted
+		if(left<pipe1) {
 			if(left<right) {
 				if(left<(strsize-2) && str.substr(left,3)=="<<<") {
 					out.push("<<<");
@@ -455,9 +455,9 @@ queue<string> findio(string str) {
 			}
 		}
 	}
-	else if(pipe<right) {
+	else if(pipe1<right) {
 		out.push("|");
-		str.erase(pipe,1);
+		str.erase(pipe1,1);
 	}
 	else {
 		if(right!=(strsize-1) && str.at(right+1)=='>') {
