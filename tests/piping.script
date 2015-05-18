@@ -1,0 +1,124 @@
+Script started on Sun 17 May 2015 11:31:02 PM PDT
+~
+ttruo018@hammer $ cs100
+[0;91m
+===============================================================================
+|                                                                             |
+| You have enabled settings specific for cs100.  Everything you do is being   |
+| recorded to measure your progress in the class.                             |
+|                                                                             |
+| Important commands for the class:                                           |
+|   * calcgrade.sh          displays a detailed breakdown of your grade       |
+|   * checksyscalls.sh      is your cpp file doing proper error checking?     |
+|   * typespeed             practice typing unix commands                     |
+|                                                                             |
+| Important commands for general C++ programming:                             |
+|   * make                  don't call g++ manually; let make do the work!    |
+|   * gdb                   the GNU debugger                                  |
+|   * valgrind              get rid of your memory leaks                      |
+|   * cppcheck              static analysis tool                              |
+|   * man                   find help about any syscall / terminal command    |
+|                                                                             |
+===============================================================================
+[0m
+[s%%%%%%%%%%[u[0;32mttruo018[0;36m@[0;32mcs100[0;36m:[0;32m~[0;95m [0;36m$[0m cd CS100/rshell/
+[s%%%%%%%%%%[u[0;32mttruo018[0;36m@[0;32mcs100[0;36m:[0;32m~/CS100/rshell[0;95m (redirect) [0;36m$[0m bin/rshell
+ttruo018@hammer.cs.ucr.edu$ #occasionally the prompt outputs before the command outputs
+ttruo018@hammer.cs.ucr.edu$ #this bug is stated in the README.md
+ttruo018@hammer.cs.ucr.edu$ #first, the basic cases
+ttruo018@hammer.cs.ucr.edu$ 
+ttruo018@hammer.cs.ucr.edu$ ls -l > temp1
+ttruo018@hammer.cs.ucr.edu$ cat < temp1
+total 44
+drwx------ 2 ttruo018 csmajs 4096 May 17 22:24 bin
+-rw------- 1 ttruo018 csmajs    0 May 17 22:48 ec
+-rw------- 1 ttruo018 csmajs 1473 Apr 11 17:37 LICENSE
+-rw------- 1 ttruo018 csmajs 9045 May  9 23:33 log
+-rw------- 1 ttruo018 csmajs  332 May 17 21:42 Makefile
+-rw------- 1 ttruo018 csmajs    0 May 17 21:30 nothing
+-rw------- 1 ttruo018 csmajs 1473 May 15 16:48 out
+-rw------- 1 ttruo018 csmajs 2813 May  1 23:58 README.md
+drwx------ 2 ttruo018 csmajs 4096 May 17 22:43 src
+-rw------- 1 ttruo018 csmajs    0 May 17 23:24 temp1
+-rw------- 1 ttruo018 csmajs   51 May 17 23:22 temp2
+-rw------- 1 ttruo018 csmajs   51 May 17 23:22 temp3
+-rw------- 1 ttruo018 csmajs  595 May 17 22:29 temp4
+drwx------ 2 ttruo018 csmajs 4096 May 17 22:43 tests
+ttruo018@hammer.cs.ucr.edu$ ca  ls -l | grep src
+ttruo018@hammer.cs.ucr.edu$ drwx------ 2 ttruo018 csmajs 4096 May 17 22:43 src
+
+ttruo018@hammer.cs.ucr.edu$ #Now for more complex cased s
+ttruo018@hammer.cs.ucr.edu$ cat <temp      <temp1>         temp1 > temp2       | grep src|tr a-Z z A-Z |     |    tee temp2   | tr A-Z a-z >temp3
+ttruo018@hammer.cs.ucr.edu$ cat temp2; cat tep mp3
+ttruo018@hammer.cs.ucr.edu$ DRWX------ 2 TTRUO018 CSMAJS 4096 MAY 17 22:43 SRC
+drwx------ 2 ttruo018 csmajs 4096 may 17 22:43 src
+
+ttruo018@hammer.cs.ucr.edu$ cat temp    < temp1 temp2 > temp3 temp4
+ttruo018@hammer.cs.ucr.edu$ cat temp4
+ttruo018@hammer.cs.ucr.edu$ DRWX------ 2 TTRUO018 CSMAJS 4096 MAY 17 22:43 SRC
+
+ttruo018@hammer.cs.ucr.edu$ cat < temp3 > temp        2 > temp5
+ttruo018@hammer.cs.ucr.edu$ cat < temp3 >> tep mp5
+ttruo018@hammer.cs.ucr.edu$ cat temp5
+ttruo018@hammer.cs.ucr.edu$ DRWX------ 2 TTRUO018 CSMAJS 4096 MAY 17 22:43 SRC
+drwx------ 2 ttruo018 csmajs 4096 may 17 22:43 src
+
+ttruo018@hammer.cs.ucr.edu$ l cat temp    < temp1 < temp2 temp3 M < temp4 < temp5 >    p5 > tmep   et mp  6 > temp7 temp8
+ttruo018@hammer.cs.ucr.edu$ ls temp8      
+ttruo018@hammer.cs.ucr.edu$ bin  ec  LICENSE  log  Makefile  nothing  out  README.md  src  temp1  temp2  temp3  temp4  temp5  temp8  tests
+
+ttruo018@hammer.cs.ucr.edu$ cat > temp6 < temp8
+ttruo018@hammer.cs.ucr.edu$ cat temp 6
+ttruo018@hammer.cs.ucr.edu$ cat: temp: No such file or directory
+cat: 6: No such file or directory
+cat temp6
+ttruo018@hammer.cs.ucr.edu$ DRWX------ 2 TTRUO018 CSMAJS 4096 MAY 17 22:43 SRC
+drwx------ 2 ttruo018 csmajs 4096 may 17 22:43 src
+
+ttruo018@hammer.cs.ucr.edu$ #If gnore the cat tmep     emp 6 line    command above
+ttruo018@hammer.cs.ucr.edu$ cat >> temp7 > t     6   > temp7 < temp3
+ttruo018@hammer.cs.ucr.edu$ ls
+ttruo018@hammer.cs.ucr.edu$ bin  ec  LICENSE  log  Makefile  nothing  out  README.md  src  temp1  temp2  temp3  temp4  temp5  temp6  temp7	temp8  tests
+cat temp7
+ttruo018@hammer.cs.ucr.edu$ drwx------ 2 ttruo018 csmajs 4096 may 17 22:43 src
+
+ttruo018@hammer.cs.ucr.edu$ cat tmep   emp6
+ttruo018@hammer.cs.ucr.edu$ DRWX------ 2 TTRUO018 CSMAJS 4096 MAY 17 22:43 SRC
+drwx------ 2 ttruo018 csmajs 4096 may 17 22:43 src
+
+ttruo018@hammer.cs.ucr.edu$ ls -l  | cat < temp8 6 > | tr A-Z a-z > temp9
+ttruo018@hammer.cs.ucr.edu$ cat temp9
+ttruo018@hammer.cs.ucr.edu$ bin
+ec
+license
+log
+makefile
+nothing
+out
+readme.md
+src
+temp1
+temp2
+temp3
+temp4
+temp5
+temp6
+temp7
+temp8
+temp9
+tests
+
+ttruo018@hammer.cs.ucr.edu$ cat <<< "extrac  credit please"
+cat: oyfYKLttruo018@hammer.cs.ucr.edu$ : No such file or directory
+
+ttruo018@hammer.cs.ucr.edu$ #My extra credit p 1 seems to not work in t the c scripts
+ttruo018@hammer.cs.ucr.edu$ #But i   I can show that is   t works s on a lab machine
+ttruo018@hammer.cs.ucr.edu$ exit
+Exiting from rshell.
+[s%%%%%%%%%%[u[0;32mttruo018[0;36m@[0;32mcs100[0;36m:[0;32m~/CS100/rshell[0;95m (redirect) [0;36m$[0m exit
+exit
+~
+ttruo018@hammer $ exit
+exit
+
+Script done on Sun 17 May 2015 11:43:16 PM PDT
