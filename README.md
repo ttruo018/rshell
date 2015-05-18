@@ -82,6 +82,7 @@ output. Just press the ENTER key to get the prompt back.
 * When combining connectors and I/O redirection(or piping), 
 there may be undefined behavior.   
 * Can only redirect each input and output to one file.
+
 ###ls
 * running `-l` and `-R` in any combination on a folder 
 containing many directories may cause errors with 
