@@ -140,42 +140,54 @@ bool runexec(const vector<string> argv) {
 					perror("Error with chdir. ");
 					cdfail = true;
 				}
-				if(!cdfail && setenv("OLDPWD", currdir, 1)==-1) {
-					perror("Error with setenv().");
-					exit(1);
-				}
-				if(!cdfail && setenv("PWD", homedir, 1)==-1) {
-					perror("Error with setenv().");
-					exit(1);
-				}
-				
+				if(!cdfail) {
+					cout << homedir << endl;
+					if(setenv("OLDPWD", currdir, 1)==-1) {
+						perror("Error with setenv().");
+						exit(1);
+					}
+					if(setenv("PWD", homedir, 1)==-1) {
+						perror("Error with setenv().");
+						exit(1);
+					}
+				}	
 			}
 			else if(argv[1] == "-") {		//cd to previous directory
 				if(chdir(prevdir)==-1) {
 					perror("Error with chdir. ");
 					cdfail = true;
 				}
-				if(!cdfail && setenv("OLDPWD", currdir, 1)==-1) {
-					perror("Error with setenv().");
-					exit(1);
-				}
-				if(!cdfail && setenv("PWD", prevdir, 1)==-1) {
-					perror("Error with setenv().");
-					exit(1);
+				if(!cdfail) {
+					cout << prevdir << endl;
+					if(setenv("OLDPWD", currdir, 1)==-1) {
+						perror("Error with setenv().");
+						exit(1);
+					}
+					if(setenv("PWD", prevdir, 1)==-1) {
+						perror("Error with setenv().");
+						exit(1);
+					}
 				}
 			}
 			else {		//cd to path given
-				if(chdir(cmd[1])==-1) {
+				string newpath = homedir;
+				string path = cmd[1];
+				newpath = newpath + '/' + path;
+				const char *cpath = newpath.c_str();
+				if(chdir(cpath)==-1) {
 					perror("Error with chdir. ");
 					cdfail = true;
 				}
-				if(!cdfail && setenv("OLDPWD", currdir, 1)==-1) {
-					perror("Error with setenv().");
-					exit(1);
-				}
-				if(!cdfail && setenv("PWD", cmd[1], 1)==-1) {
-					perror("Error with setenv().");
-					exit(1);
+				if(!cdfail) { 
+					cout << cpath << endl;
+					if(setenv("OLDPWD", currdir, 1)==-1) {
+						perror("Error with setenv().");
+						exit(1);
+					}
+					if(setenv("PWD", cpath, 1)==-1) {
+						perror("Error with setenv().");
+						exit(1);
+					}
 				}
 			}
 		}
@@ -330,8 +342,6 @@ string checkcomment(string str) {
 
 void printinfo() {
 	char* usr;
-	string pwd = getenv("PWD");
-	cout << pwd << endl;
 	if((usr=getlogin())==NULL) {
 		perror("Could not find username. ");
 	}
@@ -347,13 +357,17 @@ void printinfo() {
 	else {
 		cout << '@' << machine << ':';
 	}
+	string pwd = getenv("PWD");
 	string home = getenv("HOME");
 	if(pwd == home) {
 		cout << "~";
 	}
 	else {
 		pwd = pwd.substr(home.size());
-		cout << "~" << pwd;
+		if(pwd.at(0) == '/') {
+			pwd = pwd.substr(1);
+		}
+		cout << "~/" << pwd;
 	}
 	delete[] machine;
 }
