@@ -100,6 +100,10 @@ int main(int argc, char** argv) {
 
 //will use system calls to run the commands provided
 bool runexec(const vector<string> argv) {
+	bool cdflag = false;
+	if(argv[0]=="cd") {
+		cdflag = true;
+	}
 	char** cmd = new char*[argv.size()+1];
 	for(unsigned int i=0; i<argv.size(); ++i) {
 		cmd[i] = const_cast<char* >((argv[i]).c_str());
@@ -113,7 +117,7 @@ bool runexec(const vector<string> argv) {
 		exit(1);
 	}
 	else if(pid==0) {	//meaning we're in the child process
-		if(execvp(cmd[0], cmd)==-1) {
+		if(!cdflag && execvp(cmd[0], cmd)==-1) {
 			perror("There was an error in execvp. " );
 		}
 		delete[] cmd;
@@ -124,6 +128,56 @@ bool runexec(const vector<string> argv) {
 			perror("There was an error with wait(). " );
 			delete[] cmd;
 			exit(1);
+		}
+		//Change directory here
+		if(cdflag) {
+			char *currdir = getenv("PWD");
+			char *prevdir = getenv("OLDPWD");
+			char *homedir = getenv("HOME");
+			bool cdfail = false;
+			if(cmd[1] == '\0') {	//cd to home directory
+				if(chdir(homedir)==-1) {
+					perror("Error with chdir. ");
+					cdfail = true;
+				}
+				if(!cdfail && setenv("OLDPWD", currdir, 1)==-1) {
+					perror("Error with setenv().");
+					exit(1);
+				}
+				if(!cdfail && setenv("PWD", homedir, 1)==-1) {
+					perror("Error with setenv().");
+					exit(1);
+				}
+				
+			}
+			else if(argv[1] == "-") {		//cd to previous directory
+				if(chdir(prevdir)==-1) {
+					perror("Error with chdir. ");
+					cdfail = true;
+				}
+				if(!cdfail && setenv("OLDPWD", currdir, 1)==-1) {
+					perror("Error with setenv().");
+					exit(1);
+				}
+				if(!cdfail && setenv("PWD", prevdir, 1)==-1) {
+					perror("Error with setenv().");
+					exit(1);
+				}
+			}
+			else {		//cd to path given
+				if(chdir(cmd[1])==-1) {
+					perror("Error with chdir. ");
+					cdfail = true;
+				}
+				if(!cdfail && setenv("OLDPWD", currdir, 1)==-1) {
+					perror("Error with setenv().");
+					exit(1);
+				}
+				if(!cdfail && setenv("PWD", cmd[1], 1)==-1) {
+					perror("Error with setenv().");
+					exit(1);
+				}
+			}
 		}
 	}
 	delete[] cmd;
@@ -276,6 +330,8 @@ string checkcomment(string str) {
 
 void printinfo() {
 	char* usr;
+	string pwd = getenv("PWD");
+	cout << pwd << endl;
 	if((usr=getlogin())==NULL) {
 		perror("Could not find username. ");
 	}
@@ -289,7 +345,15 @@ void printinfo() {
 		delete[] machine;
 	}
 	else {
-		cout << "@" << machine;
+		cout << '@' << machine << ':';
+	}
+	string home = getenv("HOME");
+	if(pwd == home) {
+		cout << "~";
+	}
+	else {
+		pwd = pwd.substr(home.size());
+		cout << "~" << pwd;
 	}
 	delete[] machine;
 }
