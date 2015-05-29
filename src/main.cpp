@@ -1,5 +1,6 @@
-//THINGS TO DO:
-//
+/*THINGS TO DO:
+*
+*/
 
 #include <unistd.h>
 #include <stdio.h>
@@ -13,6 +14,7 @@
 #include <sys/wait.h>
 #include <string.h>
 #include <fcntl.h>
+#include <signal.h>
 
 using namespace std;
 using namespace boost;
@@ -37,11 +39,21 @@ void printinfo();		//prints the username and machine name before the prompt
 
 bool iomode(string line);
 
+void csignal(int sig);
+
 int main(int argc, char** argv) {
+	struct sigaction sig;
+	sig.sa_flags = SA_SIGINFO;
+	sig.sa_handler = csignal;
+	if(-1==sigaction(SIGINT, &sig, NULL)) {
+		perror("Error with sigaction().");
+	}
+
 	string input;
 	bool end = false;
 	while(!end) {
 		fflush(stdout);
+		cin.clear();
 		printinfo();
 		cout << "$ ";
 		getline(cin, input);
@@ -129,10 +141,13 @@ bool runexec(const vector<string> argv) {
 		}
 	}
 	else if(pid>0) {	//meaning we're in the parent process
-		if(wait(&status)==-1) {
-			perror("There was an error with wait(). " );
-			delete[] cmd;
-			exit(1);
+		int wpid;
+		while((wpid=wait(&status))==-1 && errno==EINTR) {
+			if(wait(&status)==-1) {
+				perror("There was an error with wait(). " );
+				delete[] cmd;
+				exit(1);
+			}
 		}
 		//Change directory here
 		if(cdflag) {
@@ -858,4 +873,8 @@ int findstr(string param, string &newstr) {
 		newstr = out.substr(first+1, second-first-1) + "\n";
 		return 0;
 	}
+}
+
+void csignal(int sig) {
+	cout << endl;
 }
