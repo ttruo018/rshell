@@ -39,15 +39,21 @@ void printinfo();		//prints the username and machine name before the prompt
 
 bool iomode(string line);
 
-void csignal(int sig);
+void handlesignal(int sig);
+
+//Global variable
+int childpid = 0;	//stores pid of child processes, if 0 then we're in the parent
 
 int main(int argc, char** argv) {
 	struct sigaction sig;
 	sig.sa_flags = SA_SIGINFO;
-	sig.sa_handler = csignal;
+	sig.sa_handler = handlesignal;
 	if(-1==sigaction(SIGINT, &sig, NULL)) {
 		perror("Error with sigaction().");
 	}
+	/*if(-1==sigaction(SIGTSTP, &sig, NULL)) {
+		perror("Error with sigaction().");
+	}*/
 
 	string input;
 	bool end = false;
@@ -141,6 +147,7 @@ bool runexec(const vector<string> argv) {
 		}
 	}
 	else if(pid>0) {	//meaning we're in the parent process
+		childpid = pid;
 		int wpid;
 		while((wpid=wait(&status))==-1 && errno==EINTR) {
 			if(wait(&status)==-1) {
@@ -149,6 +156,7 @@ bool runexec(const vector<string> argv) {
 				exit(1);
 			}
 		}
+		childpid = 0;
 		//Change directory here
 		if(cdflag) {
 			char *currdir = getenv("PWD");
@@ -820,9 +828,12 @@ bool runio(queue<string> &cmds, queue<string> &iosym) {
 		}
 
 		else if(0 < pidio) {		//Parent
-			if(!pipeio && -1 == waitpid(-1, 0, 0)) {
-				perror("Error with wait().");
-				exit(1);
+			int wpid;
+			while((wpid=wait(0))==-1 && errno==EINTR) {
+				if(!pipeio && -1 == waitpid(-1, 0, 0)) {
+					perror("Error with wait().");
+					exit(1);
+				}
 			}
 			if(leftio3) {
 				if(0 != remove(tmpfile)) {
@@ -875,6 +886,17 @@ int findstr(string param, string &newstr) {
 	}
 }
 
-void csignal(int sig) {
-	cout << endl;
+void handlesignal(int sig) {
+	if(sig==SIGINT) {
+		if(childpid) {
+			kill(childpid, SIGKILL);
+		}
+		cout << endl;
+	}
+	/*if(sig==SIGTSTP) {
+		cout << "childpid: " << childpid << endl;
+		if(childpid) {
+			kill(childpid, SIGSTOP);		
+		}
+	}*/
 }
