@@ -170,12 +170,27 @@ bool runexec(const vector<string> argv) {
 				}
 			}
 			else {		//cd to path given
-				string newpath = homedir;
+				//Need to do the ".." case
+				//Find the "/.." then delete the directory before
+				string newpath = currdir;
 				string path = cmd[1];
+				int location;
+				/*if(path=="..") {
+					int endslash = */
 				newpath = newpath + '/' + path;
+				location = newpath.find("..");
+				cout << "location: " << location << endl;
+				int newloc = newpath.find_last_of("/", location-2);
+				string frontpath = newpath.substr(0, newloc);
+				/*while(-1 != (location = newpath.find(".."))) {
+					
+				}*/
+				string backpath = newpath.substr(location+2);
+				newpath = frontpath + backpath;
 				const char *cpath = newpath.c_str();
 				if(chdir(cpath)==-1) {
 					perror("Error with chdir. ");
+					cout << "cpath: " << cpath << endl;
 					cdfail = true;
 				}
 				if(!cdfail) { 
@@ -342,6 +357,7 @@ string checkcomment(string str) {
 
 void printinfo() {
 	char* usr;
+	cout << "\033[34m";
 	if((usr=getlogin())==NULL) {
 		perror("Could not find username. ");
 	}
@@ -370,6 +386,7 @@ void printinfo() {
 		cout << "~/" << pwd;
 	}
 	delete[] machine;
+	cout << "\033[0m";
 }
 
 bool iomode(string line) {
