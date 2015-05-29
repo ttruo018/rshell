@@ -121,7 +121,6 @@ bool runexec(const vector<string> argv) {
 			if(execvp(cmd[0], cmd)==-1) {
 				perror("There was an error in execvp. " );
 			}
-			cout << "cmd[0]: " << cmd[0] << endl;		//DELETE
 			delete[] cmd;
 			exit(1);
 		}
@@ -179,7 +178,11 @@ bool runexec(const vector<string> argv) {
 				string newpath = currdir;
 				string homepath = homedir;
 				string path = cmd[1];
-				if(path.size()<newpath.size() || path.substr(0,homepath.size()-1)!=homedir) {
+				int tildeloc;
+				if((tildeloc=path.find("~"))!=-1) {
+					path.replace(tildeloc,1,homepath);
+				}
+				if(path.size()<homepath.size() || path.substr(0,homepath.size())!=homedir) {
 					if(path.at(0)=='/' || newpath.back()=='/') {
 						newpath = newpath + path;
 					}
@@ -189,9 +192,11 @@ bool runexec(const vector<string> argv) {
 					if(newpath.back()=='/') {
 						newpath = newpath.substr(0, newpath.size()-1);
 					}
-					cout << "newpath: " << newpath << endl;
 				}
-					
+				else {
+					newpath = path;
+				}
+
 				int location;
 				while(-1 != (location = newpath.find(".."))) { 
 					cout << "location: " << location << endl;
