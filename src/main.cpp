@@ -117,11 +117,17 @@ bool runexec(const vector<string> argv) {
 		exit(1);
 	}
 	else if(pid==0) {	//meaning we're in the child process
-		if(!cdflag && execvp(cmd[0], cmd)==-1) {
-			perror("There was an error in execvp. " );
+		if(!cdflag) {
+			if(execvp(cmd[0], cmd)==-1) {
+				perror("There was an error in execvp. " );
+			}
+			cout << "cmd[0]: " << cmd[0] << endl;		//DELETE
+			delete[] cmd;
+			exit(1);
 		}
-		delete[] cmd;
-		exit(1);
+		else {
+			exit(0);
+		}
 	}
 	else if(pid>0) {	//meaning we're in the parent process
 		if(wait(&status)==-1) {
@@ -170,23 +176,30 @@ bool runexec(const vector<string> argv) {
 				}
 			}
 			else {		//cd to path given
-				//Need to do the ".." case
-				//Find the "/.." then delete the directory before
 				string newpath = currdir;
+				string homepath = homedir;
 				string path = cmd[1];
-				int location;
-				/*if(path=="..") {
-					int endslash = */
-				newpath = newpath + '/' + path;
-				location = newpath.find("..");
-				cout << "location: " << location << endl;
-				int newloc = newpath.find_last_of("/", location-2);
-				string frontpath = newpath.substr(0, newloc);
-				/*while(-1 != (location = newpath.find(".."))) {
+				if(path.size()<newpath.size() || path.substr(0,homepath.size()-1)!=homedir) {
+					if(path.at(0)=='/' || newpath.back()=='/') {
+						newpath = newpath + path;
+					}
+					else {
+						newpath = newpath + "/" + path;
+					}
+					if(newpath.back()=='/') {
+						newpath = newpath.substr(0, newpath.size()-1);
+					}
+					cout << "newpath: " << newpath << endl;
+				}
 					
-				}*/
-				string backpath = newpath.substr(location+2);
-				newpath = frontpath + backpath;
+				int location;
+				while(-1 != (location = newpath.find(".."))) { 
+					cout << "location: " << location << endl;
+					int newloc = newpath.find_last_of("/", location-2);
+					string frontpath = newpath.substr(0, newloc);
+					string backpath = newpath.substr(location+2);
+					newpath = frontpath + backpath;
+				}
 				const char *cpath = newpath.c_str();
 				if(chdir(cpath)==-1) {
 					perror("Error with chdir. ");
