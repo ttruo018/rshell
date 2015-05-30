@@ -5,9 +5,9 @@ Rshell is created for UCR CS100 class Spring 2015.
 The shell can run simple commands such as `ls` and `pwd`, as well as the commands' flags. 
 Commands and connectors are read left to right.   
 You can also change your current working directory with the `cd` command.   
-The command `cd` will take you to your home directory.   
-The command `cd -` will take you to the last directory you were in.   
-The command `cd PATH` will take you to the directory described by PATH.   
+* `$ cd` will take you to your home directory.   
+* `$ cd -` will take you to the last directory you were in.   
+* `$ cd PATH` will take you to the directory described by PATH.   
 
 ###Connectors
 Connectors such as `;`, `||`, and `&&` can be used in between commands on a single line.
@@ -56,29 +56,28 @@ But `ls && exit` will perform the `ls` command first, then exit Rshell.
 ##ls   
 This `ls` command runs similar to the GNU `ls` command, 
 but only being able to use the flags `-a`, `-l`, and `R`. 
-Any combination of these flags as well as any 
-file or directory can be passed along with the `ls`. 
-The `-a` command makes `ls` print hidden files. 
-The `-l` command makes `ls` print info about each file or 
-directory. The `R` flag make `ls` run recursively. 
+Any combination of these flags as well as any file or directory can be passed along with the `ls`.  
+* The `-a` command makes `ls` print hidden files.  
+* The `-l` command makes `ls` print info about each file or directory.  
+* The `R` flag make `ls` run recursively. 
 
 ##Building and Running
 To download and build:
-	$ git clone https://github.com/ttruo018/rshell   
-	$ cd rshell   
-	$ git checkout hw3   
-	$ make
+```
+$ git clone https://github.com/ttruo018/rshell   
+$ cd rshell   
+$ git checkout hw3   
+$ make
+```
 
-To run Rshell, use the following command:
-`$ bin/rshell`   
+To run Rshell, use the following command: `$ bin/rshell`   
 
-To run ls, use the following commands:    
-`$ bin/ls`   
+To run ls, use the following commands: `$ bin/ls`   
 
 All binary executables will be in the bin directory of the rshell directory.
 
 ##Known Bugs and Issues
-###rshell
+###Rshell
 * A single `|` or `&` will let both commands run. 
 It performs the same as the `;` connector.   
 * Empty arguements may have unexpected behavior    
@@ -92,6 +91,8 @@ there may be undefined behavior.
 * Can only redirect each input and output to one file.   
 * Pressing Control-C will take you back to the first Rshell, 
 even if you are running an Rshell within an Rshell
+* When using `cd PATH`, if PATH is to a directory that you don't have access to, 
+you can still go into that directory, although you can't do anything when inside.   
 
 ###ls
 * running `-l` and `-R` in any combination on a folder 

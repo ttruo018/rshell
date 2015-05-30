@@ -222,7 +222,6 @@ bool runexec(const vector<string> argv) {
 
 				int location;
 				while(-1 != (location = newpath.find(".."))) { 
-					cout << "location: " << location << endl;
 					int newloc = newpath.find_last_of("/", location-2);
 					string frontpath = newpath.substr(0, newloc);
 					string backpath = newpath.substr(location+2);
@@ -231,7 +230,6 @@ bool runexec(const vector<string> argv) {
 				const char *cpath = newpath.c_str();
 				if(chdir(cpath)==-1) {
 					perror("Error with chdir. ");
-					cout << "cpath: " << cpath << endl;
 					cdfail = true;
 				}
 				if(!cdfail) { 
@@ -419,12 +417,15 @@ void printinfo() {
 	if(pwd == home) {
 		cout << "~";
 	}
-	else {
+	else if(pwd.size() > home.size()) {
 		pwd = pwd.substr(home.size());
 		if(pwd.at(0) == '/') {
 			pwd = pwd.substr(1);
 		}
 		cout << "~/" << pwd;
+	}
+	else {
+		cout << pwd;
 	}
 	delete[] machine;
 	cout << "\033[0m";
