@@ -1,4 +1,4 @@
-Script started on Fri 29 May 2015 07:59:59 PM PDT
+Script started on Fri 29 May 2015 10:59:10 PM PDT
 ~
 ttruo018@hammer $ cs100
 [0;91m
@@ -22,9 +22,13 @@ ttruo018@hammer $ cs100
 ===============================================================================
 [0m
 [s%%%%%%%%%%[u[0;32mttruo018[0;36m@[0;32mcs100[0;36m:[0;32m~[0;95m [0;36m$[0m cd CS100/rshell
-[s%%%%%%%%%%[u[0;32mttruo018[0;36m@[0;32mcs100[0;36m:[0;32m~/CS100/rshell[0;95m (signals) [0;36m$[0m #first[K[K[K[K[KFirst, we test d[Kcd
-[s%%%%%%%%%%[u[0;32mttruo018[0;36m@[0;32mcs100[0;36m:[0;32m~/CS100/rshell[0;95m (signals) [0;36m$[0m cd[K[Kbin/rshell
+[s%%%%%%%%%%[u[0;32mttruo018[0;36m@[0;32mcs100[0;36m:[0;32m~/CS100/rshell[0;95m (signals) [0;36m$[0m bin/rshell
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0m#First  , we test cd cases
 [34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0mcd
+/home/csmajs/ttruo018
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~[1;32m $ [0mcd -
+/home/csmajs/ttruo018/CS100/rshell
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0mcd ~
 /home/csmajs/ttruo018
 [34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~[1;32m $ [0mcd -
 /home/csmajs/ttruo018/CS100/rshell
@@ -34,9 +38,7 @@ ttruo018@hammer $ cs100
 /home/csmajs/ttruo018/CS100
 [34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100[1;32m $ [0mcd ..
 /home/csmajs/ttruo018
-[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~[1;32m $ [0mcd CS100' /rshell
-/home/csmajs/ttruo018/CS100/rshell
-[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0mcd src/
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~[1;32m $ [0mcd CS100/rshell/src/
 /home/csmajs/ttruo018/CS100/rshell/src
 [34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell/src[1;32m $ [0mcd ~/Downloads
 /home/csmajs/ttruo018/Downloads
@@ -44,15 +46,19 @@ ttruo018@hammer $ cs100
 /home/csmajs/ttruo018/CS100/rshell/src
 [34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell/src[1;32m $ [0mcd ..
 /home/csmajs/ttruo018/CS100/rshell
-[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0mcd NOT  ot  T RealDirectory
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0mcd ./
+/home/csmajs/ttruo018/CS100/rshell
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0mcd ././././././././././././././././././././././././././
+/home/csmajs/ttruo018/CS100/rshell
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0mcd NotRa ealDirectory
 Error with chdir. : No such file or directory
-[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0mcd ~/NotRealDirse  ectir  ory
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0mcd ~/NotRead l  Directory/Cs S100/rshell
 Error with chdir. : No such file or directory
-[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0m#New xt, we test Control-C
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0m#new   New xt  , we test Control  -C cases
 [34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0m^C
 [34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0m^C
 [34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0m^C
-[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0mcat >ei      
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0mcat
 hello world
 hello world
 goodbye world
@@ -66,8 +72,9 @@ Mike Izbicki is awesome.
 [34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0mcat eif
 This is a string.
 Mike Izbicki is awesome.
-[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0mca  #loop.out runs an ifi  nfinite loop
-[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0m#and    and prints out a string every 5 secons ds
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0m^C
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0m# loop.out runs an ini finite loop, priniting out           ting out a string                        
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0m# and prints out a string every 5 seconds
 [34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0mcat loop.cpp
 #include <iostream>
 #include <unistd.h>
@@ -95,4 +102,4 @@ exit
 ttruo018@hammer $ exit
 exit
 
-Script done on Fri 29 May 2015 08:06:18 PM PDT
+Script done on Fri 29 May 2015 11:04:40 PM PDT

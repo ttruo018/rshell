@@ -226,6 +226,11 @@ bool runexec(const vector<string> argv) {
 					string backpath = newpath.substr(location+2);
 					newpath = frontpath + backpath;
 				}
+				while(-1 != (location = newpath.find("."))) {
+					string frontpath = newpath.substr(0,location-1);
+					string backpath = newpath.substr(location+1);
+					newpath = frontpath + backpath;
+				}
 				const char *cpath = newpath.c_str();
 				if(chdir(cpath)==-1) {
 					perror("Error with chdir. ");
