@@ -3,8 +3,11 @@
 Rshell can execute terminal commands, similar to the bash shell. 
 Rshell is created for UCR CS100 class Spring 2015.
 The shell can run simple commands such as `ls` and `pwd`, as well as the commands' flags. 
-But unlike the bash shell, it cannot run `cd`.   
 Commands and connectors are read left to right.   
+You can also change your current working directory with the `cd` command.   
+The command `cd` will take you to your home directory.   
+The command `cd -` will take you to the last directory you were in.   
+The command `cd PATH` will take you to the directory described by PATH.   
 
 ###Connectors
 Connectors such as `;`, `||`, and `&&` can be used in between commands on a single line.
@@ -24,7 +27,7 @@ with `>` and `>>`, and pipe commands together with `|`.
 a command. If more than one file is provided, only the very 
 last file given will be used as input.    
 * With the `<<<` symbol, you can redirect a string as 
-the input to a command. The string must be enclosed within double quotation marks (ie `This is a string`), otherwise an
+the input to a command. The string must be enclosed within double quotation marks (ie `"This is a string"`), otherwise an
 error message will be shown.       
 * With the `>` symbol, you can redirect the command's output 
 into a file, creating the file if it doesn't already exist. 
@@ -36,6 +39,14 @@ command's output will be appended onto the existing file,
 rather than deleting its contents.   
 * With the `|` symbol, the output of the file on the left of 
 this symbol will be the input of the command on the right.   
+
+###Signals   
+While in Rshell, pressing Control-C will end any child process that is running 
+and return to the Rshell. 
+For example, if you run `$ cat`, the `cat` command will continuously wait for stdin. If you press 
+Control-C during the process, the cat command will end and Rshell will display the prompt. 
+This also applies to subsequent Rshell programs, meaning only the first Rshell will remain 
+if Control-C is pressed.   
 
 ###Exit command
 Typing an `exit` command will exit Rshell if run. 
@@ -52,19 +63,16 @@ The `-l` command makes `ls` print info about each file or
 directory. The `R` flag make `ls` run recursively. 
 
 ##Building and Running
-To download:
-`$ git clone https://github.com/ttruo018/rshell`   
-`$ cd rshell`   
+To download and build:
+	$ git clone https://github.com/ttruo018/rshell   
+	$ cd rshell   
+	$ git checkout hw3   
+	$ make
 
-To build, and run Rshell, use the following commands:
-
-`$ git checkout hw0`   
-`$ make`   
+To run Rshell, use the following command:
 `$ bin/rshell`   
 
-To build, and run ls, use the following commands:    
-`$ git checkout hw1`   
-`$ make`   
+To run ls, use the following commands:    
 `$ bin/ls`   
 
 All binary executables will be in the bin directory of the rshell directory.
@@ -81,7 +89,9 @@ output. Just press the ENTER key to get the prompt back.
 * The `<<<` operator seems to not work in scripts.   
 * When combining connectors and I/O redirection(or piping), 
 there may be undefined behavior.   
-* Can only redirect each input and output to one file.
+* Can only redirect each input and output to one file.   
+* Pressing Control-C will take you back to the first Rshell, 
+even if you are running an Rshell within an Rshell
 
 ###ls
 * running `-l` and `-R` in any combination on a folder 
