@@ -35,7 +35,7 @@ vector<string> parsecommand(bool &end, string str);
 
 string checkcomment(string str);		//checks and takes out comments on the command line
 
-void printinfo();		//prints the username and machine name before the prompt
+void printprompt();		//prints the username and machine name before the prompt
 
 bool iomode(string line);
 
@@ -60,8 +60,7 @@ int main(int argc, char** argv) {
 	while(!end) {
 		fflush(stdout);
 		cin.clear();
-		printinfo();
-		cout << "$ ";
+		printprompt();
 		getline(cin, input);
 		input = checkcomment(input);
 		string constr;			
@@ -394,7 +393,7 @@ string checkcomment(string str) {
 	}
 }
 
-void printinfo() {
+void printprompt() {
 	char* usr;
 	cout << "\033[34m";
 	if((usr=getlogin())==NULL) {
@@ -410,7 +409,7 @@ void printinfo() {
 		delete[] machine;
 	}
 	else {
-		cout << '@' << machine << ':';
+		cout << "\033[1;35m" << '@' << "\033[0;34m" << machine << ':';
 	}
 	string pwd = getenv("PWD");
 	string home = getenv("HOME");
@@ -428,6 +427,8 @@ void printinfo() {
 		cout << pwd;
 	}
 	delete[] machine;
+	cout << "\033[1;32m";
+	cout << " $ ";
 	cout << "\033[0m";
 }
 
