@@ -1,0 +1,98 @@
+Script started on Fri 29 May 2015 07:59:59 PM PDT
+~
+ttruo018@hammer $ cs100
+[0;91m
+===============================================================================
+|                                                                             |
+| You have enabled settings specific for cs100.  Everything you do is being   |
+| recorded to measure your progress in the class.                             |
+|                                                                             |
+| Important commands for the class:                                           |
+|   * calcgrade.sh          displays a detailed breakdown of your grade       |
+|   * checksyscalls.sh      is your cpp file doing proper error checking?     |
+|   * typespeed             practice typing unix commands                     |
+|                                                                             |
+| Important commands for general C++ programming:                             |
+|   * make                  don't call g++ manually; let make do the work!    |
+|   * gdb                   the GNU debugger                                  |
+|   * valgrind              get rid of your memory leaks                      |
+|   * cppcheck              static analysis tool                              |
+|   * man                   find help about any syscall / terminal command    |
+|                                                                             |
+===============================================================================
+[0m
+[s%%%%%%%%%%[u[0;32mttruo018[0;36m@[0;32mcs100[0;36m:[0;32m~[0;95m [0;36m$[0m cd CS100/rshell
+[s%%%%%%%%%%[u[0;32mttruo018[0;36m@[0;32mcs100[0;36m:[0;32m~/CS100/rshell[0;95m (signals) [0;36m$[0m #first[K[K[K[K[KFirst, we test d[Kcd
+[s%%%%%%%%%%[u[0;32mttruo018[0;36m@[0;32mcs100[0;36m:[0;32m~/CS100/rshell[0;95m (signals) [0;36m$[0m cd[K[Kbin/rshell
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0mcd
+/home/csmajs/ttruo018
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~[1;32m $ [0mcd -
+/home/csmajs/ttruo018/CS100/rshell
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0mcd -
+/home/csmajs/ttruo018
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~[1;32m $ [0mcd CS100
+/home/csmajs/ttruo018/CS100
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100[1;32m $ [0mcd ..
+/home/csmajs/ttruo018
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~[1;32m $ [0mcd CS100' /rshell
+/home/csmajs/ttruo018/CS100/rshell
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0mcd src/
+/home/csmajs/ttruo018/CS100/rshell/src
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell/src[1;32m $ [0mcd ~/Downloads
+/home/csmajs/ttruo018/Downloads
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/Downloads[1;32m $ [0mcd -
+/home/csmajs/ttruo018/CS100/rshell/src
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell/src[1;32m $ [0mcd ..
+/home/csmajs/ttruo018/CS100/rshell
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0mcd NOT  ot  T RealDirectory
+Error with chdir. : No such file or directory
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0mcd ~/NotRealDirse  ectir  ory
+Error with chdir. : No such file or directory
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0m#New xt, we test Control-C
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0m^C
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0m^C
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0m^C
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0mcat >ei      
+hello world
+hello world
+goodbye world
+goodbye world
+^C
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0m^C
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0mcat > eif
+This is a string.
+Mike Izbicki is awesome.
+^C
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0mcat eif
+This is a string.
+Mike Izbicki is awesome.
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0mca  #loop.out runs an ifi  nfinite loop
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0m#and    and prints out a string every 5 secons ds
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0mcat loop.cpp
+#include <iostream>
+#include <unistd.h>
+
+using namespace std;
+
+int main()
+{
+	while(1) {
+		cout << "This is an infinite loop!" << endl;
+		sleep(5);
+	}
+	return 0;
+}
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0mloop.out
+This is an infinite loop!
+This is an infinite loop!
+^C
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0m^C
+[34mttruo018[1;35m@[0;34mhammer.cs.ucr.edu:~/CS100/rshell[1;32m $ [0mexit
+Exiting from rshell.
+[s%%%%%%%%%%[u[0;32mttruo018[0;36m@[0;32mcs100[0;36m:[0;32m~/CS100/rshell[0;95m (signals) [0;36m$[0m exit
+exit
+~
+ttruo018@hammer $ exit
+exit
+
+Script done on Fri 29 May 2015 08:06:18 PM PDT
